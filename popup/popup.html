@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Boolean Judge</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="popup.js" defer></script>
+    <script src="../scripts/getCrtlyTab.js" defer></script>
+    <script src="../scripts/scrollMatch.js" defer></script>
+</head>
+
+<body>
+    <main>
+
+        <span id="id_scan-btn" role="button" data-scan="11">SCAN PAGE</span>
+        <div class="wrapper">
+            <div class="tabs">
+                <input type="radio" class="tabs__radio" name="tabs-expample" id="tab1" checked>
+                <label for="tab1" class="tabs__label info-tab-btn" data-tab="0">Page Reports</label>
+                <div class="tabs__content" id="popup-container">
+                    <!-- <div id="loading-text" class="loader"></div> -->
+                    <p id="loading-message">Nothing here yet! Scan Page to find some data.</p>
+                    <ul id="post_list" class="ul__table"></ul>
+                    <!-- <ul id="post_list" class="ul__table">
+                        <li class="li__table">
+                            <details name="detalhes">
+                                <summary>
+                                    <p id="id_report_data" data-flair="PROVA">REPORT#1</p>
+                                </summary>
+                                <p id="id_report_title">teste</p>
+                                <div class="hr-container-veryfied">
+                                    <hr><span class="hr-text-veryfied">Veryfied</span>
+                                    <hr>
+                                </div>
+                                <p id="id_report_text" class="veryfied">hi!</p> 
+                                <div class="li__info__col">
+                                    <div class="li__info"><span>id: </span><span id="info__id" data-id=""></span></div>
+                                    <div class="li__info"><span>fURL: </span><span id="info__url" data-url=""></span></div>
+                                    <div class="li__info"><span>source: </span><span id="info__source" data-source=""></span></div>
+                                    <div class="li__info"><span>score: </span><span id="info__score" data-score=""></span>
+                                    </div>
+                                </div>
+                            </details>
+                        </li>
+                    </ul> -->
+                </div>
+                <input type="radio" class="tabs__radio" name="tabs-expample" id="tab3">
+                <label for="tab3" class="tabs__label">Report Info</label>
+                <div class="tabs__content">
+                    <h1>How do i report ?</h1>
+                    <p> We are working on this, just hold 60<sup>^3</sup> seconds!</p>
+                </div>
+
+                <input type="radio" class="tabs__radio" name="tabs-expample" id="tab2">
+                <label for="tab2" class="tabs__label">About</label>
+                <div class="tabs__content">
+                    <h1>About the extension</h1>
+                    <p> data-tab fake news has been reported in this page!</p>
+                    <p>
+                        xXExtension_nameXx is a chrome extension project where it scans the user's page for any fake or
+                        misleading information text info.
+                    </p>
+                    <p>
+                        The information reported is verified mainly by humans, but it might be done by AI at some point
+                        in the future if possible.
+                    </p>
+                    <p>
+                        To use the plugin, you first need to install it from the chrome app store. When everything's
+                        done, a logo will appear next to the search bar.
+                    </p>
+                    <p>
+                        When you click the logo, a panel will appear with a <code>&gt; Scan Page &lt;</code> button.
+                        Right after, the scanning process will begin. If any previously report was made in the page, a
+                        list of the reports will show up along with the text marked up with a unique background color
+                        for visual feedback, and the colorful flair next to the report index.
+                    </p>
+                    <p>
+                        You can hover your mouse on the list, and click it. This action will open the report. The report
+                        text will appear first and then right after, the verified corrected text. Next bellow, a cluster
+                        of default information, such as:
+                    </p>
+                    <p>ID: for the id of the report</p>
+                    <p>URL: for the pnk for the completed thread on Reddit</p>
+                    <p>SOURCE: for the source of the report</p>
+                    <p>SCORE: for the percentage approvment of the report</p>
+                    <p>IMPROVE: for a pnk of the thread on Reddit, if the user wants to add or remove some info, or
+                        anything to make the report better.</p>
+                </div>
+            </div>
+        </div>
+        <footer>
+            <p><a href="#"> donate</a></p>
+            <p><a href="#">policy</a></p>
+            <p><a href="#">about</a></p>
+        </footer>
+    </main>
+
+</body>
+</html>
