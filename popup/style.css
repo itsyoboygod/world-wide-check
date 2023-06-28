@@ -486,6 +486,10 @@ ul li {
   margin: 10px 0;
 }
 
+.tabs__content img{
+  width: inherit;
+}
+
 .tabs__content h1 + p {
   background-color: tomato;
   margin: 2px;
@@ -511,6 +515,14 @@ ul li {
 
 #loading-message{
   text-align: center;
+}
+
+.no-data-found{
+  font-style: italic;
+  text-align: center;
+  color: lightgrey;
+  margin: 5px;
+  padding: 5px;
 }
 
 .li__table details{

@@ -1,32 +1,17 @@
-
 document.addEventListener('DOMContentLoaded', () => {
 
   let isDataLoaded = false; // Track if data is already loaded
   let currentTabId = null; // Store the current tab ID
 
   // Request the current tab ID from background.js
-  chrome.runtime.sendMessage({ action: 'getActiveTabId' }, (response) => {
-    currentTabId = response.tabId;
+  chrome.runtime.sendMessage({ action: 'getCurrentTabId' }, (response) => {
+    const currentTabId = response.tabId;
     // Use the currentTabId as needed
-    console.log("Current Tab ID:", currentTabId);
+    console.log('Current Tab ID:', currentTabId);
   });
 
-  function createLoadingSpinner() {
-    const loadingSpinner = document.createElement('div');
-    loadingSpinner.id = 'loading-text';
-    loadingSpinner.classList.add('loader');
-    return loadingSpinner;
-  }
-
-  function removeLoadingSpinner() {
-    const loadingSpinner = document.getElementById('loading-text');
-    if (loadingSpinner) {
-      loadingSpinner.remove();
-    }
-  }
 
   function createPostElement(postData) {
-
     const liElement = document.createElement('li');
     liElement.classList.add('li__table');
 
@@ -85,77 +70,76 @@ document.addEventListener('DOMContentLoaded', () => {
     return liElement;
   }
 
-  function fetchSubredditPosts() {
-    if (!isDataLoaded) {
-      // const loadingMessage = document.getElementById('loading-message');
-      const postListElement = document.getElementById('post_list');
-      postListElement.innerHTML = ''; // Clear existing posts
+  function fetchSubredditPosts(scanButton, currentTabId) {
+    scanButton.disabled = true;
+    scanButton.removeEventListener('click', scanButtonOnclick);
 
-      // loadingMessage.style.display = 'none'; // Hide the loading message initially
+    const postListElement = document.getElementById('popup-container');
 
-      const subredditName = 'worldwidecheck';
+    postListElement.innerHTML = ''; // Clear existing posts
 
-      const loadingSpinner = createLoadingSpinner();
-      if (loadingSpinner) {
-        postListElement.appendChild(loadingSpinner); // Add the loading spinner to the post list
-      }
+    const subredditName = 'worldwidecheck';
+    // const subredditName = 'BACHARELOVE';
 
-      fetch(`https://www.reddit.com/r/${subredditName}/new.json`)
-        .then(response => {
-          if (!response.ok) {
-            throw new Error('Network response was not ok');
-          }
-          return response.json();
-        })
-        .then(data => {
-          const posts = data.data.children;
-          displayPosts(posts);
-          isDataLoaded = true;
-          removeLoadingSpinner(); // Remove the loading spinner after data is fetched
-        })
-        .catch(error => {
-          console.log('Error occurred while fetching subreddit posts:', error);
-          isDataLoaded = true;
-          removeLoadingSpinner(); // Remove the loading spinner on error
-          // loadingMessage.style.display = 'block'; // Show the loading message
+    const loadingSpinner = createLoadingSpinner();
+    postListElement.appendChild(loadingSpinner); // Add the loading spinner
 
-          // Display the network error message
-          const errorParagraph = document.createElement('p');
-          errorParagraph.textContent = 'Network error, please wait and try again.';
-          errorParagraph.classList.add('sver_network-error');
-          postListElement.appendChild(errorParagraph);
-        });
-    } else {
-      const postListElement = document.getElementById('post_list');
-      let scanPageText = document.getElementById('scan_page_text');
-
-      if (!postListElement || postListElement.children.length === 0) {
-        if (!scanPageText) {
-          console.log('Scan Page to find some data');
+    fetch(`https://www.reddit.com/r/${subredditName}/new.json?tabId=${currentTabId}`)
+      .then(response => {
+        if (!response.ok) {
+          throw new Error('Network response was not ok');
         }
-        document.body.appendChild(scanPageText);
-      } else if (scanPageText) {
-        scanPageText.remove();
-      }
+        return response.json();
+      })
+      .then(data => {
+        const posts = data.data.children;
+        isDataLoaded = true;
+
+        if (posts.length !== 0) {
+          displayPosts(posts, currentTabId);
+        } else {
+          showNoDataMessage();
+        }
+      })
+      .catch(error => {
+        console.log('Error occurred while fetching subreddit posts:', error);
+        isDataLoaded = true;
+
+        // Display the network error message
+        const errorParagraph = document.createElement('p');
+        errorParagraph.textContent = 'Network error, please wait and try again.';
+        errorParagraph.classList.add('sver_network-error');
+        postListElement.appendChild(errorParagraph);
+      }).finally(() => {
+        removeLoadingSpinner(); // Remove the loading spinner
+        scanButton.disabled = false
+        scanButton.addEventListener('click', scanButtonOnclick);
+      })
+  }
+
+  function createLoadingSpinner() {
+    const loadingSpinner = document.createElement('div');
+    loadingSpinner.classList.add('loader');
+    return loadingSpinner;
+  }
+
+  function removeLoadingSpinner() {
+    const loadingSpinner = document.querySelector('.loader');
+    if (loadingSpinner) {
+      loadingSpinner.remove();
     }
   }
 
-  async function displayPosts(posts) {
-    const postListElement = document.createElement('ul');
-    postListElement.id = 'post_list';
-    postListElement.classList.add('ul__table');
+  async function displayPosts(posts, currentTabId) {
+    const ulElement = document.createElement('ul');
+    ulElement.id = 'post_list';
+    ulElement.classList.add('ul__table');
 
-    if (posts.length === 0) {
-      const noResultsElement = document.createElement('p');
-      noResultsElement.textContent = 'No posts found.';
-      postListElement.appendChild(noResultsElement);
-      // const loadingMessage = document.getElementById('loading-message');
-      // loadingMessage.style.display = 'block'; // Show the loading message
-    } else {
+    ulElement.innerHTML = '';
+    console.log("total subreddits posts: ", posts.length)
+
       const usrurl = await getUserURLFromLocalStorage();
-
       const postnewData = posts;
-
       const matchingTitles = []; // Store the matching titles
 
       postnewData.forEach((post, index) => {
@@ -173,31 +157,31 @@ document.addEventListener('DOMContentLoaded', () => {
           // Add more data properties as needed
         };
 
-        // console.log(postData.fURL);
-
         if (postData.fURL === usrurl) {
-          const postElement = createPostElement(postData);
-          postListElement.appendChild(postElement);
-
+          const postElement = createPostElement(postData, currentTabId);
+          ulElement.appendChild(postElement);
           matchingTitles.push(postData.title); // Add the title to the matchingTitles array
         }
       });
-    }
 
     const popupContainer = document.getElementById('popup-container');
-    popupContainer.appendChild(postListElement);
+    popupContainer.appendChild(ulElement);
+
+    console.log("Number of <li> elements:", ulElement.querySelectorAll('li').length); // Log the number of <li> elements
+
+    if (ulElement.querySelectorAll('li').length === 0) {
+      const noDataParagraph = document.createElement('p');
+      noDataParagraph.textContent = 'No data found';
+      noDataParagraph.classList.add('no-data-found');
+      popupContainer.appendChild(noDataParagraph);
+    }
 
     // Update data-tab attribute values
     const labels = document.querySelectorAll('.tabs__label');
     labels.forEach((label, index) => {
-      const tabCount = postListElement.querySelectorAll('li').length;
+      const tabCount = ulElement.querySelectorAll('li').length;
       label.setAttribute('data-tab', tabCount);
     });
-
-    const loadingMessage = document.getElementById('loading-message');
-    if (loadingMessage) {
-      loadingMessage.remove();
-    }
   }
 
   function getUserURLFromLocalStorage() {
@@ -223,13 +207,14 @@ document.addEventListener('DOMContentLoaded', () => {
     return '';
   }
 
-  const scanButton = document.getElementById('id_scan-btn');
-  scanButton.addEventListener('click', () => {
+  const scanButtonOnclick = () => {
     // Send the tab ID to background.js
     chrome.runtime.sendMessage({ action: 'sendTabId', tabId: currentTabId });
 
     // Use the currentTabId in your fetchSubredditPosts function or any other relevant functions
-    console.log("Current Tab ID in fetchSubredditPosts:", currentTabId);
-    fetchSubredditPosts();
-  });
+    fetchSubredditPosts(scanButton, currentTabId);
+  }
+
+  const scanButton = document.getElementById('id_scan-btn');
+  scanButton.addEventListener('click', scanButtonOnclick);
 });

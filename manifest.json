@@ -38,7 +38,8 @@
                    "./scripts/scambtn.js",
                    "./scripts/scrollMatch.js",
                    "./scripts/setUrl.js"       
-                  ]
+                  ],
+            "run_at": "document_end"
         }
     ]
   }

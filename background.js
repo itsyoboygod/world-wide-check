@@ -1,5 +1,17 @@
 //  console.log('background running!')
 
+
+// Add the getCurrentTabId function
+function getCurrentTabId() {
+  return new Promise((resolve, reject) => {
+    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+      const currentTabId = tabs[0].id;
+      resolve(currentTabId);
+    });
+  });
+}
+
+
 chrome.action?.onClicked.addListener(async(tab) => {
      await chrome.scripting.executeScript({
     target: { tabId: tab.id },
@@ -23,9 +35,12 @@ chrome.runtime.onConnect.addListener((port) => {
 // Listen for messages from popup
 chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
 
-  if (request.action === 'getActiveTabId') {
-    const tabId = sender.tab?.id;
-    sendResponse({ tabId });
+  if (request.action === 'getCurrentTabId') {
+    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+      const currentTabId = tabs[0].id;
+      sendResponse({ tabId: currentTabId });
+    });
+    return true; // Add this line to indicate that we will respond asynchronously
   }
 
   if (request.source === 'content.js') {
