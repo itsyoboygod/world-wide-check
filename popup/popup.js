@@ -2,10 +2,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
   let isDataLoaded = false; // Track if data is already loaded
   let currentTabId = null; // Store the current tab ID
+  let tabUrl = null; // Store the current tab ID
 
   // Request the current tab ID from background.js
   chrome.runtime.sendMessage({ action: 'getCurrentTabId' }, (response) => {
     const currentTabId = response.tabId;
+    tabUrl = response.tabUrl
     // Use the currentTabId as needed
     console.log('Current Tab ID:', currentTabId);
   });
@@ -84,7 +86,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const loadingSpinner = createLoadingSpinner();
     postListElement.appendChild(loadingSpinner); // Add the loading spinner
 
-    fetch(`https://www.reddit.com/r/${subredditName}/new.json?tabId=${currentTabId}`)
+    fetch(`https://www.reddit.com/r/${subredditName}/new.json`)
       .then(response => {
         if (!response.ok) {
           throw new Error('Network response was not ok');
@@ -157,7 +159,7 @@ document.addEventListener('DOMContentLoaded', () => {
           // Add more data properties as needed
         };
 
-        if (postData.fURL === usrurl) {
+        if (postData.fURL === tabUrl) {
           const postElement = createPostElement(postData, currentTabId);
           ulElement.appendChild(postElement);
           matchingTitles.push(postData.title); // Add the title to the matchingTitles array
@@ -171,7 +173,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (ulElement.querySelectorAll('li').length === 0) {
       const noDataParagraph = document.createElement('p');
-      noDataParagraph.textContent = 'No data found';
+      noDataParagraph.textContent = 'All clear. No data found on this page!';
       noDataParagraph.classList.add('no-data-found');
       popupContainer.appendChild(noDataParagraph);
     }
@@ -209,10 +211,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const scanButtonOnclick = () => {
     // Send the tab ID to background.js
-    chrome.runtime.sendMessage({ action: 'sendTabId', tabId: currentTabId });
+    chrome.runtime.sendMessage({ action: 'sendTabId', tabId: currentTabId , tabUrl: tabUrl});
 
+    console.log("tabUrl: ", tabUrl)
     // Use the currentTabId in your fetchSubredditPosts function or any other relevant functions
     fetchSubredditPosts(scanButton, currentTabId);
+    
+ 
   }
 
   const scanButton = document.getElementById('id_scan-btn');

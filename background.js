@@ -25,7 +25,9 @@ chrome.runtime.onConnect.addListener((port) => {
     if (message.action === 'sendTabId') {
       chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
         const tabId = tabs[0].id;
-        chrome.tabs.sendMessage(tabId, { tabId });
+        chrome.tabs.get(tabId, function(tab) {
+          chrome.tabs.sendMessage(tabId, { tabUrl, tabId });
+        });
       });
     }
   });
@@ -38,7 +40,8 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
   if (request.action === 'getCurrentTabId') {
     chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
       const currentTabId = tabs[0].id;
-      sendResponse({ tabId: currentTabId });
+      var tabUrl = tabs[0].url;
+      sendResponse({ tabId: currentTabId, tabUrl: tabUrl });
     });
     return true; // Add this line to indicate that we will respond asynchronously
   }
@@ -78,15 +81,4 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
     });
   }
 
-  if (request.source === "read_json.js") {
-    // console.log(`
-    //  ${request.source} , 
-    //  ${request.payload.message}
-    // `);
-    sendResponse({
-      // source: "backgroundResponse", 
-      // payload: "Hello from background!" 
-    });
-
-  }
 });
