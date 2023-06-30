@@ -14,6 +14,33 @@ World Wide Check leverages a vast network of internet users and the collective w
 
 **Please visit [r/worldwidecheck](https://www.reddit.com/r/worldwidecheck/) to join the community and contribute to the fight against misinformation.**
 
+## Reporting Potentially False or Misleading Information
+
+Follow these steps to report potentially false or misleading information using World Wide Check:
+
+### Step 1: Check Existing Reports
+
+First, check if any information has already been reported for the current web page in the World Wide Check plugin.
+
+![exmpl_dom_readme](https://github.com/itsyoboygod/world-wide-check/assets/58955082/bf06a812-c88b-471a-b030-d5c369c3e7f6)
+
+
+### Step 2: Create a New Post
+
+If no data is fetched, you're good to report. Go to [r/worldwidecheck](https://www.reddit.com/r/worldwidecheck/) to create a new post.
+
+Copy the paragraph from the web page and paste it as the post title. Make sure the text remains the same.
+
+In the body of the post, it's crucial to add the fURL link as the last element. This provides the URL of the web page being reported.
+
+Remember to include the post flag to indicate that it's a report. This is mandatory.
+
+![step_3](https://github.com/itsyoboygod/world-wide-check/assets/58955082/7c17a39a-da6b-44a3-aa72-12c430c76c02)
+
+### Step 3: Submit the Report
+
+After ensuring all the information is accurate, submit the post. The report will appear in the World Wide Check plugin.
+
 ## Key Features
 
 - **Report Misinformation:** With World Wide Check, you can easily report suspicious content found on webpages, helping to prevent the spread of misinformation.
