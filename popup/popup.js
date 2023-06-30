@@ -1,6 +1,5 @@
 document.addEventListener('DOMContentLoaded', () => {
 
-  let isDataLoaded = false; // Track if data is already loaded
   let currentTabId = null; // Store the current tab ID
   let tabUrl = null; // Store the current tab ID
 
@@ -12,8 +11,7 @@ document.addEventListener('DOMContentLoaded', () => {
     console.log('Current Tab ID:', currentTabId);
   });
 
-
-  function createPostElement(postData) {
+  function createPostElement(postData, tabCount) {
     const liElement = document.createElement('li');
     liElement.classList.add('li__table');
 
@@ -23,7 +21,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const summaryElement = document.createElement('summary');
     const reportNumber = document.createElement('p');
     reportNumber.id = 'id_report_data';
-    reportNumber.textContent = `REPORT#${postData.reportNumber}`;
+    reportNumber.textContent = `REPORT#${tabCount + 1}`;
     summaryElement.appendChild(reportNumber);
 
     const titleElement = document.createElement('p');
@@ -160,7 +158,7 @@ document.addEventListener('DOMContentLoaded', () => {
         };
 
         if (postData.fURL === tabUrl) {
-          const postElement = createPostElement(postData, currentTabId);
+          const postElement = createPostElement(postData,  ulElement.querySelectorAll('li').length);
           ulElement.appendChild(postElement);
           matchingTitles.push(postData.title); // Add the title to the matchingTitles array
         }
@@ -216,8 +214,6 @@ document.addEventListener('DOMContentLoaded', () => {
     console.log("tabUrl: ", tabUrl)
     // Use the currentTabId in your fetchSubredditPosts function or any other relevant functions
     fetchSubredditPosts(scanButton, currentTabId);
-    
- 
   }
 
   const scanButton = document.getElementById('id_scan-btn');

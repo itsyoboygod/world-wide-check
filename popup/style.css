@@ -758,6 +758,23 @@ li:nth-of-type(15) details summary p::before{
   100% { transform: rotate(360deg); }
 }
 
+
+/* Zoom In Effect
+.tabs__content img[alt="Check Reports"] {
+  overflow: hidden;
+  position: relative;
+}
+
+.tabs__content img[alt="Check Reports"]{
+  transition: transform 0.3s ease;
+}
+
+.tabs__content img[alt="Check Reports"]:hover {
+  transform: scale(1.5);
+} */
+
+
+
 /* --------------------FOOTER--------------------- */
 
 footer {
