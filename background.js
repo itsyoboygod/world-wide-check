@@ -11,6 +11,9 @@ function getCurrentTabId() {
   });
 }
 
+// // Set the badge text
+// chrome.browserAction.setBadgeText({ text: '5' });
+
 
 chrome.action?.onClicked.addListener(async(tab) => {
      await chrome.scripting.executeScript({

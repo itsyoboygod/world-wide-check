@@ -4,7 +4,12 @@
     "version": "1.0",
     "manifest_version": 3,
     "icons":{
-        "16": "/img/wwc_16x16.jpg"
+        "16": "/img/ofc_logo_16x16.png",
+        "32": "/img/ofc_logo_32x32.png",
+        "48": "/img/ofc_logo_48x48.png",
+        "64": "/img/ofc_logo_64x64.png",
+        "128": "/img/ofc_logo_128x128.png",
+        "256": "/img/ofc_logo_256x256.png"
     },
     "action": {
         "default_popup": "./popup/popup.html",
@@ -32,7 +37,8 @@
     "content_scripts": [
         {
             "matches": ["<all_urls>"],
-            "js": ["background.js",
+            "js": [
+                   "background.js",
                    "./popup/popup.js",
                    "./scripts/content.js",
                    "./scripts/scambtn.js",

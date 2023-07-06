@@ -1,7 +1,8 @@
 document.addEventListener('DOMContentLoaded', () => {
 
-  let currentTabId = null; // Store the current tab ID
-  let tabUrl = null; // Store the current tab ID
+  currentTabId = null; // Store the current tab ID
+  tabUrl = null; // Store the current tab ID
+  isDataLoaded = false;
 
   // Request the current tab ID from background.js
   chrome.runtime.sendMessage({ action: 'getCurrentTabId' }, (response) => {
@@ -9,6 +10,7 @@ document.addEventListener('DOMContentLoaded', () => {
     tabUrl = response.tabUrl
     // Use the currentTabId as needed
     console.log('Current Tab ID:', currentTabId);
+    scanButtonOnclick()
   });
 
   function createPostElement(postData, tabCount) {
@@ -51,9 +53,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const infoElements = [
       { id: 'info__id', dataAttribute: 'data-id', dataValue: postData.post_id },
       { id: 'info__url', dataAttribute: 'data-url', dataValue: postData.fURL },
-      { id: 'info__source', dataAttribute: 'data-source', dataValue: postData.source },
       { id: 'info__score', dataAttribute: 'data-score', dataValue: postData.score },
-      { id: 'info__thread', dataAttribute: 'data-thread', dataValue: postData.thread_link },
+      // { id: 'info__source', dataAttribute: 'data-source', dataValue: postData.source },
+      // { id: 'info__thread', dataAttribute: 'data-thread', dataValue: postData.thread_link },
     ];
 
     infoElements.forEach((info) => {
@@ -65,6 +67,14 @@ document.addEventListener('DOMContentLoaded', () => {
       infoColElement.appendChild(infoElement);
     });
 
+    const threadLinkElement = document.createElement('a');
+    threadLinkElement.id = `info__thread`;
+    threadLinkElement.classList.add('info__col');
+    threadLinkElement.href = postData.thread_link;
+    threadLinkElement.textContent = postData.thread_link;
+    threadLinkElement.target = '_blank';
+    infoColElement.appendChild(threadLinkElement);
+
     detailsElement.append(summaryElement, titleElement, hrContainerElement, textElement, infoColElement);
     liElement.appendChild(detailsElement);
     return liElement;
@@ -73,11 +83,8 @@ document.addEventListener('DOMContentLoaded', () => {
   function fetchSubredditPosts(scanButton, currentTabId) {
     scanButton.disabled = true;
     scanButton.removeEventListener('click', scanButtonOnclick);
-
     const postListElement = document.getElementById('popup-container');
-
     postListElement.innerHTML = ''; // Clear existing posts
-
     const subredditName = 'worldwidecheck';
     // const subredditName = 'BACHARELOVE';
 
@@ -138,31 +145,35 @@ document.addEventListener('DOMContentLoaded', () => {
     ulElement.innerHTML = '';
     console.log("total subreddits posts: ", posts.length)
 
-      const usrurl = await getUserURLFromLocalStorage();
-      const postnewData = posts;
-      const matchingTitles = []; // Store the matching titles
+    const usrurl = await getUserURLFromLocalStorage();
+    const postnewData = posts;
+    const matchingTitles = []; // Store the matching titles
 
-      postnewData.forEach((post, index) => {
-        const fURL = extractURLFromText(post.data.selftext);
-        const postData = {
-          reportNumber: index + 1,
-          title: post.data.title,
-          text: post.data.selftext,
-          post_id: post.data.id,
-          fURL,
-          source: post.data.source,
-          score: post.data.score,
-          flair: post.data.link_flair_text,
-          thread_link: post.data.url
-          // Add more data properties as needed
-        };
+    postnewData.forEach((post, index) => {
+      const fURL = extractURLFromText(post.data.selftext);
+      const postData = {
+        reportNumber: index + 1,
+        title: post.data.title,
+        text: post.data.selftext,
+        post_id: post.data.id,
+        fURL,
+        source: post.data.source,
+        score: post.data.score,
+        flair: post.data.link_flair_text,
+        thread_link: post.data.url
+      };
 
-        if (postData.fURL === tabUrl) {
-          const postElement = createPostElement(postData,  ulElement.querySelectorAll('li').length);
-          ulElement.appendChild(postElement);
-          matchingTitles.push(postData.title); // Add the title to the matchingTitles array
-        }
-      });
+      if (postData.fURL === tabUrl) {
+        const postElement = createPostElement(postData, ulElement.querySelectorAll('li').length);
+        ulElement.appendChild(postElement);
+        matchingTitles.push(postData.title); // Add the title to the matchingTitles array
+      }
+
+      // Save the post text to local storage
+      const postTitle = postData.title;
+      savePostTextToLocalStorage(postData.post_id, postTitle, matchingTitles);
+
+    });
 
     const popupContainer = document.getElementById('popup-container');
     popupContainer.appendChild(ulElement);
@@ -181,6 +192,67 @@ document.addEventListener('DOMContentLoaded', () => {
     labels.forEach((label, index) => {
       const tabCount = ulElement.querySelectorAll('li').length;
       label.setAttribute('data-tab', tabCount);
+    });
+  }
+
+  function savePostTextToLocalStorage(postId, postTitle, matchingTitles) {
+    if (matchingTitles.includes(postTitle)) {
+      const postData = {
+        postId: postId,
+        postTitle: postTitle
+      };
+
+      chrome.storage.local.set({ postData }, () => {
+        console.log(`
+Post text for post ID ${postId} saved to local storage
+text saved : ${postTitle}
+        `);
+      });
+    }
+  }
+
+  function saveDataToLocalStorage(data) {
+    const listHTML = data.innerHTML;
+    chrome.storage.local.set({ listHTML }, () => {
+      console.log('List HTML saved to local storage');
+    });
+  }
+
+
+  // function getDataFromLocalStorage() {
+  //   return new Promise((resolve, reject) => {
+  //     chrome.storage.local.get('postsData', (result) => {
+  //       const { postsData } = result;
+  //       if (postsData) {
+  //         resolve(postsData);
+  //       } else {
+  //         resolve([]);
+  //       }
+  //     });
+  //   });
+  // }
+
+  function restorePostsFromLocalStorage() {
+    return new Promise((resolve, reject) => {
+      chrome.storage.local.get('listHTML', (result) => {
+        const { listHTML } = result;
+        if (listHTML) {
+          isDataLoaded = true;
+          const ulElement = document.createElement('ul');
+          ulElement.id = 'post_list';
+          ulElement.classList.add('ul__table');
+          ulElement.innerHTML = listHTML;
+          const popupContainer = document.getElementById('popup-container');
+          popupContainer.appendChild(ulElement);
+        }
+        resolve();
+      });
+    });
+  }
+
+  function removePostsFromLocalStorage() {
+    chrome.storage.local.remove('postsData', () => {
+      console.log('Posts data removed from local storage');
     });
   }
 
@@ -209,7 +281,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const scanButtonOnclick = () => {
     // Send the tab ID to background.js
-    chrome.runtime.sendMessage({ action: 'sendTabId', tabId: currentTabId , tabUrl: tabUrl});
+    chrome.runtime.sendMessage({ action: 'sendTabId', tabId: currentTabId, tabUrl: tabUrl });
 
     console.log("tabUrl: ", tabUrl)
     // Use the currentTabId in your fetchSubredditPosts function or any other relevant functions
@@ -218,4 +290,30 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const scanButton = document.getElementById('id_scan-btn');
   scanButton.addEventListener('click', scanButtonOnclick);
+
+  function saveList() {
+    restorePostsFromLocalStorage()
+      .then(() => {
+        if (!isDataLoaded) {
+          fetchSubredditPosts(scanButton, currentTabId);
+        }
+      })
+      .catch((error) => {
+        console.log('Error occurred while restoring data from local storage:', error);
+        fetchSubredditPosts(scanButton, currentTabId);
+      });
+
+    window.addEventListener('beforeunload', () => {
+      if (isDataLoaded) {
+        const ulElement = document.getElementById('post_list');
+        if (ulElement) {
+          saveDataToLocalStorage(ulElement);
+        } else {
+          removePostsFromLocalStorage();
+        }
+      } else {
+        removePostsFromLocalStorage();
+      }
+    });
+  }
 });

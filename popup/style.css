@@ -134,27 +134,20 @@ main h1 {
   background: transparent;
   background-color: hsla(0,0%,0%,.5);
   border-radius: 0.2em;
-  font-size: .7rem;
+  font-size: .8rem;
   margin: 5px 0;
   padding: 5px;
-}
-
-#info__id, #info__url{
-  position: relative;
-}
-
-#info__url {
-  /* text-decoration: none; */
-  color: var(--white);
-}
-
-#info__id, #info__source{
-  position: relative;
+  color: lightskyblue;
 }
 
 #info__source {
+  position: relative;
   /* text-decoration: none; */
-  color: var(--white);
+  /* color: var(--white); */
+}
+
+#info__id{
+  font-size: .8rem;
 }
 
 #info__id::before{
@@ -165,24 +158,56 @@ main h1 {
   /* background-color: red;  */
   font-weight: bolder;
   color: var(--white);
+  font-size: .8rem;
+}
+
+#info__url {
+  /* color: var(--white); */
+  font-size: .8rem;
 }
 
 #info__url::before{
   /* content: attr(data-url); */
-  content: "fURL: ";
+  content: "site: ";
   width: fit-content;
   /* background-color: red;  */
   color: var(--white);
   font-weight: bolder;
 }
 
+ #info__thread {
+  text-decoration: none;
+  margin: 2px;
+  padding: 2px;
+  font-size: .8rem;
+  font-family: monospace;
+  /* position: relative; */
+  align-self: center;
+  overflow-wrap: break-word;
+  /* color: var(--white); */
+  color: lightskyblue;
+  transition: .2s ease-in-out;
+}
+
+#info__thread:hover {
+  opacity: .5;
+  transition: .2s ease-in-out;
+  cursor: pointer;
+}
+
 #info__thread::before{
-  /* content: attr(data-url); */
+  /* content: attr(data-thread); */
   content: "thread link: ";
   width: fit-content;
   /* background-color: red;  */
   color: var(--white);
   font-weight: bolder;
+  font-size: .8rem;
+}
+
+#info__thread::after{
+  content: attr(data_thread);
+  margin: 5rem;
 }
 
 #info__source::before{
@@ -192,6 +217,7 @@ main h1 {
   /* background-color: red;  */
   color: var(--white);
   font-weight: bolder;
+  font-size: .8rem;
 }
 
 #info__report::before{
@@ -219,6 +245,11 @@ main h1 {
   font-weight: bolder;
 }
 
+
+#info__score{
+  font-size: .8rem;
+}
+
 #info__score::before{
   /* content: attr(data-score); */
   content: "score: ";
@@ -226,6 +257,7 @@ main h1 {
    /* background-color: red; */
   color: var(--white);
   font-weight: bolder;
+  font-size: .8rem;
 }
 
 .li__info textarea:focus{
@@ -390,9 +422,6 @@ ul li {
 
 /* --------------------TABS--------------------- */
 
-.tabs__label[data-tab=""]:empty  .tabs__label[for="tab1"]::before{
-  display: none;
-}
 
 .tablinks::before {
   content: attr(data-tab);
@@ -458,6 +487,10 @@ ul li {
   outline: solid 3px var(--white);
   z-index: 1;
 }
+
+/* [data-tab^="0"]:not(:empty) {
+  display: none;
+} */
 
 .tabs__radio {
   display: none;
