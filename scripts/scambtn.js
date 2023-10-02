@@ -38,8 +38,8 @@ chrome.storage.local.get(['postData'], function (result) {
                 position: absolute;
                 right: -0.5em;
                 top: -0.5em;
-                width: 5px;
-                height: 5px;
+                min-width: 5px;
+                min-height: 6px;
                 outline: solid 3px;
                 display: flex;
                 justify-content: center;
@@ -49,7 +49,7 @@ chrome.storage.local.get(['postData'], function (result) {
                 background-color: red;
                 line-height: 0px;
                 font-family: monospace;
-                padding: 5px;
+                padding: 1.2%;
                 font-weight: 700;
                 z-index: 999;
                 font-size: .8rem;">!</i></span>`

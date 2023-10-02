@@ -4,8 +4,6 @@ const payload = {
   usrurl: usrurl
 };
 
-chrome.storage.local.set({ payload }, () => {
-  console.log(`
-usrURL: ${usrurl}
-  `);
-});
+chrome.storage.local.set(payload).then(() => {
+  // console.log("usrURL: " , payload.usrurl);
+})

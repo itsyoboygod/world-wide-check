@@ -1,17 +1,19 @@
-document.addEventListener('DOMContentLoaded', () => {
 
-  currentTabId = null; // Store the current tab ID
-  tabUrl = null; // Store the current tab ID
+console.log("bruh")
+document.addEventListener('DOMContentLoaded', () => {
+  currentTabId = null;
+  tabUrl = null;
+  tabId = null;
   isDataLoaded = false;
 
   // Request the current tab ID from background.js
   chrome.runtime.sendMessage({ action: 'getCurrentTabId' }, (response) => {
-    const currentTabId = response.tabId;
+    currentTabId = response.tabId;
     tabUrl = response.tabUrl
-    // Use the currentTabId as needed
-    console.log('Current Tab ID:', currentTabId);
     scanButtonOnclick()
   });
+
+  function createP() { return document.createElement('p') }
 
   function createPostElement(postData, tabCount) {
     const liElement = document.createElement('li');
@@ -21,12 +23,12 @@ document.addEventListener('DOMContentLoaded', () => {
     detailsElement.setAttribute('name', 'detalhes');
 
     const summaryElement = document.createElement('summary');
-    const reportNumber = document.createElement('p');
+    const reportNumber = createP()
     reportNumber.id = 'id_report_data';
     reportNumber.textContent = `REPORT#${tabCount + 1}`;
     summaryElement.appendChild(reportNumber);
 
-    const titleElement = document.createElement('p');
+    const titleElement = createP()
     titleElement.id = `id_report_title_${postData.post_id}`; // Use unique ID for each title element
     titleElement.textContent = postData.title;
 
@@ -39,7 +41,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const hrElement2 = document.createElement('hr');
     hrContainerElement.append(hrElement1, hrTextElement, hrElement2);
 
-    const textElement = document.createElement('p');
+    const textElement = createP()
     textElement.id = `id_report_text_${postData.post_id}`; // Use unique ID for each text element
     textElement.classList.add('veryfied');
     textElement.textContent = postData.text;
@@ -54,12 +56,10 @@ document.addEventListener('DOMContentLoaded', () => {
       { id: 'info__id', dataAttribute: 'data-id', dataValue: postData.post_id },
       { id: 'info__url', dataAttribute: 'data-url', dataValue: postData.fURL },
       { id: 'info__score', dataAttribute: 'data-score', dataValue: postData.score },
-      // { id: 'info__source', dataAttribute: 'data-source', dataValue: postData.source },
-      // { id: 'info__thread', dataAttribute: 'data-thread', dataValue: postData.thread_link },
     ];
 
     infoElements.forEach((info) => {
-      const infoElement = document.createElement('p');
+      const infoElement = createP()
       infoElement.id = info.id;
       infoElement.classList.add('info__col');
       infoElement.textContent = `${info.dataValue}`;
@@ -84,12 +84,12 @@ document.addEventListener('DOMContentLoaded', () => {
     scanButton.disabled = true;
     scanButton.removeEventListener('click', scanButtonOnclick);
     const postListElement = document.getElementById('popup-container');
-    postListElement.innerHTML = ''; // Clear existing posts
+    // postListElement.innerHTML = ''; // Clear existing posts
     const subredditName = 'worldwidecheck';
     // const subredditName = 'BACHARELOVE';
 
     const loadingSpinner = createLoadingSpinner();
-    postListElement.appendChild(loadingSpinner); // Add the loading spinner
+    postListElement.appendChild(loadingSpinner);
 
     fetch(`https://www.reddit.com/r/${subredditName}/new.json`)
       .then(response => {
@@ -113,7 +113,7 @@ document.addEventListener('DOMContentLoaded', () => {
         isDataLoaded = true;
 
         // Display the network error message
-        const errorParagraph = document.createElement('p');
+        const errorParagraph = document.createElement('p')
         errorParagraph.textContent = 'Network error, please wait and try again.';
         errorParagraph.classList.add('sver_network-error');
         postListElement.appendChild(errorParagraph);
@@ -123,7 +123,6 @@ document.addEventListener('DOMContentLoaded', () => {
         scanButton.addEventListener('click', scanButtonOnclick);
       })
   }
-
   function createLoadingSpinner() {
     const loadingSpinner = document.createElement('div');
     loadingSpinner.classList.add('loader');
@@ -137,17 +136,16 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  async function displayPosts(posts, currentTabId) {
+  async function displayPosts(posts) {
     const ulElement = document.createElement('ul');
     ulElement.id = 'post_list';
     ulElement.classList.add('ul__table');
 
     ulElement.innerHTML = '';
-    console.log("total subreddits posts: ", posts.length)
+    // console.log("total subreddits posts: ", posts.length)
 
-    const usrurl = await getUserURLFromLocalStorage();
     const postnewData = posts;
-    const matchingTitles = []; // Store the matching titles
+    const matchingTitles = [];
 
     postnewData.forEach((post, index) => {
       const fURL = extractURLFromText(post.data.selftext);
@@ -178,10 +176,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const popupContainer = document.getElementById('popup-container');
     popupContainer.appendChild(ulElement);
 
-    console.log("Number of <li> elements:", ulElement.querySelectorAll('li').length); // Log the number of <li> elements
-
     if (ulElement.querySelectorAll('li').length === 0) {
-      const noDataParagraph = document.createElement('p');
+      const noDataParagraph = createP()
       noDataParagraph.textContent = 'All clear. No data found on this page!';
       noDataParagraph.classList.add('no-data-found');
       popupContainer.appendChild(noDataParagraph);
@@ -189,9 +185,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Update data-tab attribute values
     const labels = document.querySelectorAll('.tabs__label');
-    labels.forEach((label, index) => {
-      const tabCount = ulElement.querySelectorAll('li').length;
+    labels.forEach((label) => {
+      let tabCount = ulElement.querySelectorAll('li').length;
       label.setAttribute('data-tab', tabCount);
+      let msg = tabCount
+      chrome.runtime.sendMessage({ action: 'showNotification', payload: msg });
     });
   }
 
@@ -211,65 +209,6 @@ text saved : ${postTitle}
     }
   }
 
-  function saveDataToLocalStorage(data) {
-    const listHTML = data.innerHTML;
-    chrome.storage.local.set({ listHTML }, () => {
-      console.log('List HTML saved to local storage');
-    });
-  }
-
-
-  // function getDataFromLocalStorage() {
-  //   return new Promise((resolve, reject) => {
-  //     chrome.storage.local.get('postsData', (result) => {
-  //       const { postsData } = result;
-  //       if (postsData) {
-  //         resolve(postsData);
-  //       } else {
-  //         resolve([]);
-  //       }
-  //     });
-  //   });
-  // }
-
-  function restorePostsFromLocalStorage() {
-    return new Promise((resolve, reject) => {
-      chrome.storage.local.get('listHTML', (result) => {
-        const { listHTML } = result;
-        if (listHTML) {
-          isDataLoaded = true;
-          const ulElement = document.createElement('ul');
-          ulElement.id = 'post_list';
-          ulElement.classList.add('ul__table');
-          ulElement.innerHTML = listHTML;
-          const popupContainer = document.getElementById('popup-container');
-          popupContainer.appendChild(ulElement);
-        }
-        resolve();
-      });
-    });
-  }
-
-  function removePostsFromLocalStorage() {
-    chrome.storage.local.remove('postsData', () => {
-      console.log('Posts data removed from local storage');
-    });
-  }
-
-  function getUserURLFromLocalStorage() {
-    return new Promise((resolve, reject) => {
-      chrome.storage.local.get('payload', (result) => {
-        const { payload } = result;
-        if (payload) {
-          const { usrurl } = payload;
-          resolve(usrurl);
-        } else {
-          resolve('');
-        }
-      });
-    });
-  }
-
   function extractURLFromText(text) {
     const regex = /\[.*?\]\((.*?)\)/; // Regular expression to match [text](url) pattern
     const matches = text.match(regex);
@@ -283,37 +222,10 @@ text saved : ${postTitle}
     // Send the tab ID to background.js
     chrome.runtime.sendMessage({ action: 'sendTabId', tabId: currentTabId, tabUrl: tabUrl });
 
-    console.log("tabUrl: ", tabUrl)
     // Use the currentTabId in your fetchSubredditPosts function or any other relevant functions
-    fetchSubredditPosts(scanButton, currentTabId);
+    fetchSubredditPosts( currentTabId);
   }
 
   const scanButton = document.getElementById('id_scan-btn');
   scanButton.addEventListener('click', scanButtonOnclick);
-
-  function saveList() {
-    restorePostsFromLocalStorage()
-      .then(() => {
-        if (!isDataLoaded) {
-          fetchSubredditPosts(scanButton, currentTabId);
-        }
-      })
-      .catch((error) => {
-        console.log('Error occurred while restoring data from local storage:', error);
-        fetchSubredditPosts(scanButton, currentTabId);
-      });
-
-    window.addEventListener('beforeunload', () => {
-      if (isDataLoaded) {
-        const ulElement = document.getElementById('post_list');
-        if (ulElement) {
-          saveDataToLocalStorage(ulElement);
-        } else {
-          removePostsFromLocalStorage();
-        }
-      } else {
-        removePostsFromLocalStorage();
-      }
-    });
-  }
 });

@@ -1,24 +1,8 @@
-//  console.log('background running!')
-
-
 // Add the getCurrentTabId function
-function getCurrentTabId() {
-  return new Promise((resolve, reject) => {
-    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-      const currentTabId = tabs[0].id;
-      resolve(currentTabId);
-    });
-  });
-}
-
-// // Set the badge text
-// chrome.browserAction.setBadgeText({ text: '5' });
-
-
-chrome.action?.onClicked.addListener(async(tab) => {
-     await chrome.scripting.executeScript({
+chrome.action?.onClicked.addListener(async (tab) => {
+  await chrome.scripting.executeScript({
     target: { tabId: tab.id },
-    files: ['popup.js', 'content.js']
+    files: ['popup/popup.js', 'scripts/content.js']
   });
 });
 
@@ -28,17 +12,22 @@ chrome.runtime.onConnect.addListener((port) => {
     if (message.action === 'sendTabId') {
       chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
         const tabId = tabs[0].id;
-        chrome.tabs.get(tabId, function(tab) {
-          chrome.tabs.sendMessage(tabId, { tabUrl, tabId });
-        });
+        chrome.tabs.sendMessage(tabId, { tabUrl, tabId });
       });
     }
   });
 });
 
-
+let badgeTextValue = '';
 // Listen for messages from popup
-chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
+chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+  if (request.action == 'showNotification') {
+    if (request.payload >= 0) {
+      setTxtBadge(`${request.payload}`);
+      showNotification();
+    }
+    sendResponse({});
+  }
 
   if (request.action === 'getCurrentTabId') {
     chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
@@ -46,42 +35,55 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
       var tabUrl = tabs[0].url;
       sendResponse({ tabId: currentTabId, tabUrl: tabUrl });
     });
-    return true; // Add this line to indicate that we will respond asynchronously
+    return true;
   }
 
   if (request.source === 'content.js') {
     const activeTab = request.tab;
     console.log(activeTab);
-    // Use the active tab information as needed
-    
-    sendResponse({
-      //     source: "backgroundResponse", 
-      //     payload: "Hello from background!" 
-    });
+    sendResponse({});
   }
-
-  if (request.source === "popup.js") {
-    // console.log(`
-    //  ${request.source} , 
-    //  ${request.payload.message}
-    // `);
-    sendResponse({
-      //     source: "backgroundResponse", 
-      //     payload: "Hello from background!" 
-    });
-  }
-
-  let window = self
-  window.word = "coding train"
-  if (request.source === "wordselec.js") {
-    // console.log(`
-    //  ${request.source} , 
-    //  ${window.word = request.payload.message}
-    // `);
-    sendResponse({
-      //     source: "backgroundResponse", 
-      //     payload: "Hello from background!" 
-    });
-  }
-
 });
+
+function showNotification() {
+  const options = {
+    type: "basic",
+    title: "Online Information Warning ⚠️",
+    message: "World Wide Check community has reported a suspicious information in this site you currently are",
+    iconUrl: "/img/ofc_logo_256x256.png"
+  };
+  
+  chrome.notifications.create(options, (notificationId) => {
+    // Add a click event listener for the notification
+    chrome.notifications.onClicked.addListener((clickedNotificationId) => {
+      if (clickedNotificationId === notificationId) {
+        // Open the extension's popup when the notification is clicked
+        console.log("Teste", chrome)
+        chrome.action.openPopup();
+      }
+    });
+  });
+}
+
+// Function to get the tab ID of the currently active tab
+function getTabId(callback) {
+  chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+    if (tabs && tabs.length > 0) {
+      const tabId = tabs[0].id;
+      callback(tabId);
+    } else {
+      console.error("No active tabs found.");
+    }
+  });
+}
+
+function setTxtBadge(badgeTextValue) {
+  getTabId((tabId) => {
+    chrome.action.setBadgeText(
+      {
+        text: badgeTextValue,
+        tabId: tabId,
+      },
+      () => {});
+  });
+}
