@@ -1,9 +1,9 @@
-const usrurl = window.location.href.replace(/\s/g, '');
+// const usrurl = window.location.href.replace(/\s/g, '');
 
-const payload = {
-  usrurl: usrurl
-};
+// const payload = {
+//   usrurl: usrurl
+// };
 
-chrome.storage.local.set(payload).then(() => {
-  // console.log("usrURL: " , payload.usrurl);
-})
+// chrome.storage.local.set(payload).then(() => {
+//   // console.log("usrURL: " , payload.usrurl);
+// })

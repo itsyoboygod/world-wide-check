@@ -556,6 +556,7 @@ ul li {
   margin: 5px;
   padding: 5px;
   transition: 0.2s ease-in-out;
+  user-select: none;
 }
 
 .no-data-found:hover{

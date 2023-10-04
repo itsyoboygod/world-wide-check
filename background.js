@@ -1,12 +1,14 @@
 // Add the getCurrentTabId function
-chrome.action?.onClicked.addListener(async (tab) => {
-  await chrome.scripting.executeScript({
-    target: { tabId: tab.id },
-    files: ['popup/popup.js', 'scripts/content.js']
-  });
-});
+  async function something(){
+    // Execute your scripts here
+    const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+    await chrome.scripting.executeScript({
+      target: { tabId: tab.id },
+      files: ['popup/popup.js']
+    });
+  }
 
-// Send the tab ID to popup.js
+// Send the tab ID to popup.js  
 chrome.runtime.onConnect.addListener((port) => {
   port.onMessage.addListener((message) => {
     if (message.action === 'sendTabId') {
@@ -19,15 +21,16 @@ chrome.runtime.onConnect.addListener((port) => {
 });
 
 let badgeTextValue = '';
-// Listen for messages from popup
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-  if (request.action == 'showNotification') {
-    if (request.payload >= 0) {
+  // if (request.action == 'showNotification') {
+    if (request.payload > 0) {
       setTxtBadge(`${request.payload}`);
       showNotification();
+    }else{
+      setTxtBadge(`${request.payload = 0}`);
     }
-    sendResponse({});
-  }
+  //   sendResponse({});
+  // }
 
   if (request.action === 'getCurrentTabId') {
     chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
@@ -46,20 +49,29 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 });
 
 function showNotification() {
+  if (!chrome.notifications) {
+    console.error("Notifications not supported in this environment.");
+    return;
+  }
+
   const options = {
     type: "basic",
     title: "Online Information Warning ⚠️",
-    message: "World Wide Check community has reported a suspicious information in this site you currently are",
+    message: "World Wide Check community has reported suspicious information on this site.",
     iconUrl: "/img/ofc_logo_256x256.png"
   };
-  
+
   chrome.notifications.create(options, (notificationId) => {
+    if (chrome.runtime.lastError) {
+      console.error("Error creating notification:", chrome.runtime.lastError);
+      return;
+    }
+
     // Add a click event listener for the notification
     chrome.notifications.onClicked.addListener((clickedNotificationId) => {
       if (clickedNotificationId === notificationId) {
         // Open the extension's popup when the notification is clicked
-        console.log("Teste", chrome)
-        chrome.action.openPopup();
+        chrome.action.setPopup({ popup: '/popup/popup.html' });
       }
     });
   });

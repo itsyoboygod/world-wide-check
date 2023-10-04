@@ -11,48 +11,16 @@
     "128": "/img/ofc_logo_128x128.png",
     "256": "/img/ofc_logo_256x256.png"
   },
-  "action": {
-    "popup": "./popup/popup.html",
-    "title": "World Wide Check"
-  },
   "permissions": [
     "activeTab",
     "scripting",
-    "contextMenus",
     "storage",
-    "tabs",
     "notifications"
   ],
-  "web_accessible_resources": [
-    {
-      "resources": [
-        "img/*.png",
-        "img/*.jpg"
-      ],
-      "css": [
-        "styles.css"
-      ],
-      "js": [
-        "background.js",
-        "popup/popup.js",
-        "scripts/content.js",
-        "scripts/scambtn.js",
-        "scripts/scrollMatch.js",
-        "scripts/setUrl.js"
-      ],
-      "use_dynamic_url": true
-    }
-  ],
-  "host_permissions": [
-    "https://developer.chrome.com/*"
-  ],
-  "optional_permissions": [
-    "topSites"
-  ],
-  "optional_host_permissions": [
-    "http://www.developer.chrome.com/*",
-    "https://www.google.com/"
-  ],
+  "action": {
+    "default_popup": "/popup/popup.html",
+    "deafult_title": "World Wide Check"
+  },
   "background": {
     "service_worker": "background.js"
   },
@@ -62,14 +30,9 @@
         "<all_urls>"
       ],
       "js": [
-        "background.js",
         "popup/popup.js",
-        "scripts/content.js",
-        "scripts/scambtn.js",
-        "scripts/scrollMatch.js",
-        "scripts/setUrl.js"
-      ],
-      "run_at": "document_end"
+        "scripts/scambtn.js"
+      ]
     }
   ]
 }
