@@ -31,7 +31,8 @@
       ],
       "js": [
         "popup/popup.js",
-        "scripts/scambtn.js"
+        "scripts/scambtn.js",
+        "scripts/txtHtml.js"
       ]
     }
   ]

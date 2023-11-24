@@ -14,7 +14,6 @@ chrome.storage.local.get(['postData'], function (result) {
   
       // Get all text nodes in the webpage
       const textNodes = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
-  
       // Iterate over the text nodes and highlight the matched titles
       while (textNode = textNodes.nextNode()) {
         if (regex.test(textNode.textContent)) {
