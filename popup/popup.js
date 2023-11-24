@@ -28,14 +28,9 @@ function createPostElement(postData, tabCount) {
   titleElement.id = `id_report_title_${postData.post_id}`; // Use unique ID for each title element
   titleElement.textContent = postData.title;
 
-  const hrContainerElement = document.createElement('div');
-  hrContainerElement.classList.add('hr-container-status');
   const hrElement1 = document.createElement('hr');
-  const hrTextElement = document.createElement('span');
-  hrTextElement.classList.add('hr-text-status');
-  hrTextElement.setAttribute('data-status', 'verified');
-  const hrElement2 = document.createElement('hr');
-  hrContainerElement.append(hrElement1, hrTextElement, hrElement2);
+  hrElement1.classList.add('hr-status');
+  hrElement1.setAttribute('data-hr_status', 'verified');
 
   const textElement = createP()
   textElement.id = `id_report_text_${postData.post_id}`; // Use unique ID for each text element
@@ -71,7 +66,7 @@ function createPostElement(postData, tabCount) {
   threadLinkElement.target = '_blank';
   infoColElement.appendChild(threadLinkElement);
 
-  detailsElement.append(summaryElement, titleElement, hrContainerElement, textElement, infoColElement);
+  detailsElement.append(summaryElement, titleElement, hrElement1, textElement, infoColElement);
   liElement.appendChild(detailsElement);
   return liElement;
 }

@@ -36,13 +36,15 @@
   --clr-data-verified: var(--lime);
   --clr-data-dog-whistle: var(--indigo);
   --clr-data-gossip: var(--hotpink);
+
+  --clr-bckg-hr-grdnt: linear-gradient(to right, transparent, var(--rdm-clr), transparent)
 }
 /* 
 ::selection{
   background-color: blueviolet !important;
   position: relative;
 }  */
-
+/* 
 ::selection::before {
   content: "attr(data-count)";
   position: absolute;
@@ -59,7 +61,7 @@
   font-family: monospace;
   padding: 0px;
   outline: solid 2px var(--white);
-}
+} */
 
 body {
   margin: 0;
@@ -93,7 +95,7 @@ main {
   background-color: hsla(0,0%,100%,.3);
 }
 
-.li__table .li__info{
+  .li__table .li__info{
   width: fit-content;
   max-height: 200px;
   overflow-y: scroll;
@@ -117,12 +119,14 @@ main {
 
 .li__info__col{
   background-color: hsla(0,0%,0%,.5);
-  border-radius: 0.2em;
-  font-size: .8rem;
-  display: grid;
-  color: lightskyblue;
-  gap: 0.1rem;
-  padding: .5rem 0;
+    border-radius: 0.2em;
+    font-size: .8rem;
+    display: grid;
+    color: lightskyblue;
+    gap: 0.1rem;
+    padding: 0.5rem 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 #info__source {
@@ -279,6 +283,7 @@ main ul {
   margin: 0;
   list-style-type: none;
   color: white;
+  overflow: hidden;
 }
 
 main ul li {
@@ -300,7 +305,6 @@ main ul li:hover {
 
 main ul li p {
   font-size: 1.1rem;
-  font-family: monospace;
   align-self: center;
   overflow-wrap: break-word;
 }
@@ -359,8 +363,8 @@ ul li {
 .tabs__label[for="tab1"]::before {
   content: attr(data-tab);
   position: absolute;
-  top: -0.8em;
-  right: -0.8em;
+  top: -1em;
+  right: -1em;
   width: 1.2em;
   height: 1.2em;
   display: flex;
@@ -396,7 +400,7 @@ ul li {
   margin: 0 .5rem;
   padding: 0;
   line-height: 1.5;
-  
+  font-family: monospace;
 }
 
 .tabs__content {
@@ -497,7 +501,6 @@ ul li {
 
 .li__table details summary p{
   position: relative;
-  margin: 0 .5rem;
 }
 
 li details summary p::after{
@@ -511,7 +514,6 @@ li details summary p::after{
   align-items: center;
   border-radius: 0.2em;
   color: white;
-  font-family: monospace;
   padding: 5px;
   font-weight: 700;
   font-size: 1.1rem;
@@ -529,55 +531,59 @@ li details summary p::after{
   display:  none !important;
 }
 
-.hr-container-status {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin: 5px 0;
+.hr-status {
+  line-height: 1em;
+  position: relative;
+  outline: 0;
+  opacity: 1;
+  border: 0;
+  color: black;
+  text-align: center;
 }
 
-.hr-container-status hr {
-  width: 40%;
-  margin: 0 10px;
-  border: solid 0.1px;
+.hr-status hr {
+  box-sizing: content-box;
+  height: 0;
+  overflow: visible;
 }
 
-.hr-text-status {
-  font-size: 15px;
+.hr-status::before {
+  content: attr(data-hr_status);
+  background: linear-gradient(to right, transparent, var(--white), transparent);
+  position: absolute;
+  left: 0;
+  top: 40%;
+  width: 100%;
+  height: 3px;
 }
 
-.hr-container-status span::after {
-  content: attr(data-status);
+.hr-status::after {
+  content: attr(data-hr_status);
+  position: relative;
+  display: inline-block;
+  padding: 0 0.5em;
+  line-height: 1.3em;
+  background-color: var(--white);
+  color: #000;
+  border-radius: 0.2em;
+  font-weight: bold;
+  text-shadow: 0px 0px 0px black;
 }
 
-.hr-container-status span[data-status = "verified"]::after{
-  content: attr(data-status);
-  color: var(--clr-data-verified);
+.hr-status[data-hr_status="verified"]::before {
+  background: linear-gradient(to right, transparent, var(--clr-data-verified), transparent);
 }
 
-.hr-container-status span[data-status = "verified"] .hr-container-status hr {
-  color: var(--clr-data-verified);
+.hr-status[data-hr_status="analysing"]::before {
+  background: linear-gradient(to right, transparent, var(--clr-data-analysing), transparent);
 }
 
-.hr-container-status span[data-status = "analysing"] hr {
-  color: var(--clr-data-analysing);
+.hr-status[data-hr_status="verified"]::after {
+  background-color: var(--clr-data-verified);
 }
 
-.hr-container-status span[data-status = "analysing"]::after {
-  content: attr(data-status);
-  color: var(--clr-data-analysing);
-}
-
-.hr-container-analysing hr {
-  width: 33%;
-  margin: 7px;
-  color: var(--orangered);
-  border: solid 0.1px;
-}
-
-.hr-text-analysing {
-  font-size: 15px;
-  color: var(--orangered);
+.hr-status[data-hr_status="analysing"]::after {
+  background-color: var(--clr-data-analysing);
 }
 
 li details summary p[data-flair="FAKE"]::after{
