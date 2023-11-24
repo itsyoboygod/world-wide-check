@@ -1,57 +1,19 @@
-// Add the getCurrentTabId function
 async function something() {
-  // Execute your scripts here
   const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
   await chrome.scripting.executeScript({
     target: { tabId: tab.id },
-    files: ['popup/popup.js', '/scripts/txtHtml.js']
+    files: ['popup/popup.js']
   });
 }
 
-// Send the tab ID to popup.js  
-chrome.runtime.onConnect.addListener((port) => {
-  port.onMessage.addListener((message) => {
-    if (message.action === 'sendTabId') {
-      chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-        const tabId = tabs[0].id;
-        chrome.tabs.sendMessage(tabId, { tabUrl, tabId });
-      });
-    }
-  });
-});
+let badgeTextValue = '';
 
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-  if (request.action === 'get_page_content') {
-    const pageContent = request.txtHtml;
-    console.log(pageContent)
-
-    fetchApiPosts().then(allApiReports => {
-      // Create a regex pattern from the API reports.
-      const apiReportsPattern = new RegExp(allApiReports, 'gi');
-
-      // Use the regex pattern to search for matches in the page content.
-      const matches = pageContent.match(apiReportsPattern);
-
-      if (matches && matches.length > 0) {
-        console.log('Found matches in page content:', matches);
-        setTxtBadge(matches.length.toString());
-      } else {
-        console.log('No matches found in page content.');
-        setTxtBadge('bruh');
-      }})
-
-
-
-
-
-    let matchingTitles = [];
-    let badgeCount = matchingTitles.length
-    if (badgeCount > 0) {
-      setTxtBadge(badgeCount.toString())
-    } else {
-      badgeCount = 'bruh'
-      setTxtBadge(badgeCount.toString())
-    }
+  if (request.payload > 0) {
+    setTxtBadge(`${request.payload}`);
+    // showNotification();
+  } else {
+    setTxtBadge(`${request.payload = 0}`);
   }
 
   if (request.action === 'getCurrentTabId') {
@@ -62,35 +24,55 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     });
     return true;
   }
+
+  if (request.action === 'sendfullHTMLTEXT') {
+    updateFullHTMLText(request.fullTxt);
+  }
 });
 
-const subredditName = 'worldwidecheck';
-function fetchApiPosts() {
-  return new Promise((resolve, reject) => {
-    fetch(`https://www.reddit.com/r/${subredditName}/new.json`)
-      .then(response => {
-        if (!response.ok) {
-          throw new Error('Network response was not ok');
-        }
-        return response.json();
-      })
-      .then(data => {
-        const posts = data.data.children;
-        if (posts.length !== 0) {
-          const allApiReports = posts.map(titlex => titlex.data.title).join('\n');
-          console.log(allApiReports);
-          resolve(allApiReports);
-        } else {
-          resolve(''); // Resolve with an empty string if there are no posts.
-        }
-      })
-      .catch(error => {
-        console.log('Error occurred while fetching subreddit posts:', error);
-        reject(error);
-      });
-  });
+let matchCount = 0;
+const matchingTitles = [];
+
+let title = "postTitle";
+let fullHTMLTEXT = '';
+
+// FILTER fullHTMLTEXT AND FIND THE MATCHING TITLE FROM API FECTCH WITH REGEX AND PUT IN A ARRAY[],
+//  THEN SET THE ARRAY.LENGTH AS THE badgeTextValue
+
+function updateFullHTMLText(newValue) {
+  fullHTMLTEXT = newValue;
+  console.log(fullHTMLTEXT);
 }
-fetchApiPosts()
+
+function updatedApiTitle(newTitle) {
+  console.log(newTitle);
+}
+
+const regex = new RegExp(title, 'gi');
+
+async function fetchPosts() {
+  await fetch(`https://www.reddit.com/r/${subredditName}/new.json`)
+    .then(response => {
+      if (!response.ok) {
+        throw new Error('Network response was not ok');
+      }
+      return response.json();
+    })
+    .then(data => {
+      const posts = data.data.children;
+      posts.forEach((post) => {
+        console.log(post.data.title)
+        updatedApiTitle(post.data.title)
+      })
+      if (posts.length !== 0) {
+      }
+    })
+    .catch(error => {
+      console.log('Error occurred while fetching subreddit posts:', error);
+    })
+}
+
+// ------------- NOTIFICATIONS -------------
 function showNotification() {
   if (!chrome.notifications) {
     console.error("Notifications not supported in this environment.");
@@ -132,14 +114,8 @@ function getTabId(callback) {
   });
 }
 
-let badgeTextValue = '';
+// ------------- Badge -------------
 function setTxtBadge(badgeTextValue) {
-  getTabId((tabId) => {
-    chrome.action.setBadgeText(
-      {
-        text: badgeTextValue,
-        tabId: tabId,
-      },
-      () => { });
-  });
+  chrome.action.setBadgeText(
+    { text: badgeTextValue }, () => { });
 }

@@ -32,7 +32,8 @@
       "js": [
         "popup/popup.js",
         "scripts/scambtn.js",
-        "scripts/txtHtml.js"
+        "scripts/readDom.js",
+        "scripts/getDatafrmLocalStrg.js"
       ]
     }
   ]

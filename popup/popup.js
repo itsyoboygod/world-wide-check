@@ -29,11 +29,11 @@ function createPostElement(postData, tabCount) {
   titleElement.textContent = postData.title;
 
   const hrContainerElement = document.createElement('div');
-  hrContainerElement.classList.add('hr-container-veryfied');
+  hrContainerElement.classList.add('hr-container-status');
   const hrElement1 = document.createElement('hr');
   const hrTextElement = document.createElement('span');
-  hrTextElement.classList.add('hr-text-veryfied');
-  hrTextElement.textContent = 'Verified';
+  hrTextElement.classList.add('hr-text-status');
+  hrTextElement.setAttribute('data-status', 'verified');
   const hrElement2 = document.createElement('hr');
   hrContainerElement.append(hrElement1, hrTextElement, hrElement2);
 
@@ -76,9 +76,9 @@ function createPostElement(postData, tabCount) {
   return liElement;
 }
 
-function fetchSubredditPosts(currentTabId) {
+function fetchSubredditPosts() {
   const postListElement = document.getElementById('popup-container');
-  postListElement ? postListElement.innerHTML : "Clear existing posts/error"; // Clear existing posts
+  postListElement ? postListElement.innerHTML : "Clear existing posts/error";
   const subredditName = 'worldwidecheck';
   // const subredditName = 'BACHARELOVE';
 
@@ -95,25 +95,19 @@ function fetchSubredditPosts(currentTabId) {
     .then(data => {
       const posts = data.data.children;
       isDataLoaded = true;
-
-      if (posts.length !== 0) {
-        displayPosts(posts, currentTabId);
-      } else {
-        showNoDataMessage();
-      }
+      posts.length !== 0 ? displayPosts(posts) : showNoDataMessage();
     })
     .catch(error => {
       console.log('Error occurred while fetching subreddit posts:', error);
       isDataLoaded = true;
 
-      // Display the network error message
       const errorParagraph = document.createElement('p')
       errorParagraph.textContent = 'Network error, please wait and try again.';
       errorParagraph.classList.add('sver_network-error');
       postListElement.appendChild(errorParagraph);
     }).finally(() => {
       removeLoadingMsg()
-      removeLoadingSpinner(); // Remove the loading spinner
+      removeLoadingSpinner();
     })
 }
 
@@ -125,26 +119,20 @@ function createLoadingSpinner() {
 
 function removeLoadingMsg() {
   const loadingmsg = document.getElementById("loading-message")
-  if (loadingmsg) {
-    loadingmsg.remove();
-  }
+  loadingmsg ? loadingmsg.remove() : "remove loading message error"
 }
 
 function removeLoadingSpinner() {
   const loadingSpinner = document.querySelector('.loader');
-  if (loadingSpinner) {
-    loadingSpinner.remove();
-  }
+  loadingSpinner ? loadingSpinner.remove() : "remove loading spiner error"
 }
 
 async function displayPosts(posts) {
   const ulElement = document.createElement('ul');
   ulElement.id = 'post_list';
   ulElement.classList.add('ul__table');
-
   ulElement.innerHTML = '';
   // console.log("total subreddits posts: ", posts.length)
-
   const postnewData = posts;
   const matchingTitles = [];
 
@@ -199,7 +187,6 @@ function savePostTextToLocalStorage(postId, postTitle, matchingTitles) {
       postId: postId,
       postTitle: postTitle
     };
-
     chrome.storage.local.set({ postData }, () => {
       console.log(`
 Post text for post ID ${postId} saved to local storage
@@ -210,15 +197,13 @@ text saved : ${postTitle}
 }
 
 function extractURLFromText(text) {
-  const regex = /\[.*?\]\((.*?)\)/; // Regular expression to match [text](url) pattern
+  const regex = /\[.*?\]\((.*?)\)/;
   const matches = text.match(regex);
   if (matches && matches.length > 1) {
-    return matches[1]; // Extract the URL from the second match group
+    return matches[1];
   }
   return '';
 }
-// Send the tab ID to background.js
-chrome.runtime.sendMessage({ action: 'sendTabId', tabId: currentTabId, tabUrl: tabUrl });
 
 // Use the currentTabId in your fetchSubredditPosts function or any other relevant functions
 fetchSubredditPosts(currentTabId);
