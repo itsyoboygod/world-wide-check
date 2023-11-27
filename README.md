@@ -2,7 +2,7 @@
 
 World Wide Check is a powerful Chrome extension designed to combat misinformation on the internet. It enables users to report and flag potentially false or misleading content directly from webpages, contributing to a safer online environment.
 
-![World Wide Check](https://github.com/itsyoboygod/world-wide-check/assets/58955082/282807ab-ca35-4451-94d1-6c561b8b1d93)
+![readme_md_print_wwc](https://github.com/itsyoboygod/world-wide-check/assets/58955082/62ecd88d-a227-4523-84eb-ccc5ccc9ffcd)
 
 **Please note: The above image is for visual representation only and features Lorem Ipsum text.**
 
@@ -10,7 +10,7 @@ World Wide Check is a powerful Chrome extension designed to combat misinformatio
 
 World Wide Check leverages a vast network of internet users and the collective wisdom of the online community to identify and report misleading information. By utilizing a subreddit dedicated to World Wide Check ([r/worldwidecheck](https://www.reddit.com/r/worldwidecheck/)), all reported content is carefully examined and verified by a community of vigilant users.
 
-![Reddit - r/worldwidecheck](https://github.com/itsyoboygod/world-wide-check/assets/58955082/45c6cf56-1755-4161-b95e-508d850152f7)
+![new_step](https://github.com/itsyoboygod/world-wide-check/assets/58955082/397f7076-7c64-4492-949d-64d42d258ba3)
 
 **Please visit [r/worldwidecheck](https://www.reddit.com/r/worldwidecheck/) to join the community and contribute to the fight against misinformation.**
 

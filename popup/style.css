@@ -7,6 +7,7 @@
   --orangered: hsl(16, 100%, 50%);
   --coral: hsl(16, 100%, 66%);
   --yellow: hsl(39, 100%, 50%);
+  --gold: hsl(51, 100%, 50%);
   --brown: hsl(0, 59%, 41%);
   --olive: hsl(60, 100%, 25%);
   --lightpurple: hsl(300, 76%, 72%);
@@ -283,7 +284,7 @@ main ul {
   margin: 0;
   list-style-type: none;
   color: white;
-  overflow: hidden;
+  /* overflow: hidden; */
 }
 
 main ul li {
@@ -319,6 +320,94 @@ main ul li:nth-child(even) {
 
 ul li {
   position: relative;
+}
+
+#key_features, #report_rules{
+  background-color: inherit;
+  gap: .1rem;
+}
+
+#key_features li, #report_rules li{
+  display: grid;
+  position: relative;
+  gap: .3rem;
+  border-radius: .5rem;
+}
+
+#key_features li>*:last-child, #report_rules li>*:last-child{
+  margin-bottom: .5rem;
+}
+
+#key_features li:before,
+#report_rules li::before{
+  content: '.';
+    position: absolute;
+    display: block;
+    top: -8px;
+    left: -8px;
+    width: 15px;
+    height: 15px;
+    color: var(--white);
+    text-align: center;
+    background-color: var(--white);
+    border-radius: 50%;
+    z-index: 3;
+    line-height: .5;
+}
+
+#key_features li::after,
+#report_rules li::after{
+  content: '';
+  position: absolute;
+  display: block;
+    top: -8px;
+    right: -8px;
+    width: 15px;
+    height: 15px;
+    color: red;
+    background-color: white;
+    border-radius: 50%;
+    z-index: 3;
+}
+
+#key_features li:is(:first-child):before,
+#key_features li:is(:first-child)::after,
+#report_rules li:is(:first-child)::before,
+#report_rules li:is(:first-child)::after{
+ display: none;
+}
+
+#key_features li h2,
+#report_rules li p{
+  margin-top: .5rem;
+}
+
+#key_features li h2::before{
+  display: inline-block;
+  visibility: visible;
+  transition: .2s ease-in-out;
+  font-weight: 100;
+  margin: 0 0.5rem;
+  line-height: 1;
+  background: transparent;
+  border-radius: 50%;
+  text-shadow: 0px 0px 10px red;
+}
+
+#key_features li:nth-child(1) h2::before{
+  content: "⚠";
+  color: var(--gold);
+}
+
+#key_features li:nth-child(2) h2::before{
+  /* content: attr('&#61632;'); */
+  content: "🌐";
+  color: red;
+}
+
+#key_features li:nth-child(3) h2::before{
+  content: "🔌";
+  color: red;
 }
 
 /* --------------------TABS--------------------- */
@@ -394,13 +483,20 @@ ul li {
 .tabs__radio:checked+.tabs__label+.tabs__content {
   display: grid;
   gap: .5rem;
+  font-size: .8rem;
 }
+
+#tab2:checked + .tabs__label + .tabs__content p, 
+#tab3:checked + .tabs__label + .tabs__content p {
+  line-height: 1.3;
+} 
 
 .tabs__content p, h1, h2, h3, h4, a{
   margin: 0 .5rem;
   padding: 0;
   line-height: 1.5;
   font-family: monospace;
+  align-self: center;
 }
 
 .tabs__content {
@@ -444,8 +540,8 @@ ul li {
   font-style: italic;
   text-align: center;
   color: lightgrey;
-  margin: 5px;
-  padding: 5px;
+  margin: 5px !important;
+  padding: 5px !important;
   transition: 0.2s ease-in-out;
   user-select: none;
 }
@@ -548,7 +644,7 @@ li details summary p::after{
 }
 
 .hr-status::before {
-  content: attr(data-hr_status);
+  content: '';
   background: linear-gradient(to right, transparent, var(--white), transparent);
   position: absolute;
   left: 0;
