@@ -113,9 +113,15 @@ main {
   color: var(--rdm-clr);
 }
 
+.li__info code{
+  background-color: var(--lightgrey);
+  font-style: italic;
+  padding: 3px;
+  border-radius: 0.5rem;
+}
+
 .li__info__col p{
-  margin: 0;
-  padding: 0;
+  font-size: .8rem;
 }
 
 .li__info__col{
@@ -130,14 +136,6 @@ main {
     text-overflow: ellipsis;
 }
 
-#info__source {
-  position: relative;
-}
-
-#info__id{
-  font-size: .8rem;
-}
-
 #info__id::before{
   /* content: attr(data-id); */
   content: "id: ";
@@ -145,10 +143,6 @@ main {
   color: var(--white);
   font-weight: bolder;
   color: var(--white);
-  font-size: .8rem;
-}
-
-#info__url {
   font-size: .8rem;
 }
 
@@ -212,10 +206,6 @@ main {
   width: fit-content;
   color: var(--white);
   font-weight: bolder;
-}
-
-#info__score{
-  font-size: .8rem;
 }
 
 #info__score::before{
@@ -306,7 +296,6 @@ main ul li:hover {
 
 main ul li p {
   font-size: 1.1rem;
-  align-self: center;
   overflow-wrap: break-word;
 }
 
@@ -324,7 +313,8 @@ ul li {
 
 #key_features, #report_rules{
   background-color: inherit;
-  gap: .1rem;
+  gap: .2rem;
+  overflow: hidden;
 }
 
 #key_features li, #report_rules li{

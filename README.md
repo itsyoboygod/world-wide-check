@@ -22,7 +22,7 @@ Follow these steps to report potentially false or misleading information using W
 
 First, check if any information has already been reported for the current web page in the World Wide Check plugin.
 
-![exmpl_dom_readme](https://github.com/itsyoboygod/world-wide-check/assets/58955082/bf06a812-c88b-471a-b030-d5c369c3e7f6)
+![no_data_fetch_readme](https://github.com/itsyoboygod/world-wide-check/assets/58955082/62652254-30cc-4a1a-8484-9b7bd623f28b)
 
 
 ### Step 2: Create a New Post
@@ -31,11 +31,15 @@ If no data is fetched, you're good to report. Go to [r/worldwidecheck](https://w
 
 Copy the paragraph from the web page and paste it as the post title. Make sure the text remains the same.
 
+![save_post_title_readme](https://github.com/itsyoboygod/world-wide-check/assets/58955082/eaf318b5-ac3e-43ea-8598-3bc882952e38)
+
 In the body of the post, it's crucial to add the fURL link as the last element. This provides the URL of the web page being reported.
+
+![set_furl_readme](https://github.com/itsyoboygod/world-wide-check/assets/58955082/6a278441-2fc0-48b3-90a8-92dabcaad9a6)
 
 Remember to include the post flag to indicate that it's a report. This is mandatory.
 
-![step_3](https://github.com/itsyoboygod/world-wide-check/assets/58955082/7c17a39a-da6b-44a3-aa72-12c430c76c02)
+![set_flair_post_readme](https://github.com/itsyoboygod/world-wide-check/assets/58955082/043c67a1-4450-4b22-b35f-0e4bf10253a2)
 
 ### Step 3: Submit the Report
 

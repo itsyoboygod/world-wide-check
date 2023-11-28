@@ -151,9 +151,9 @@ async function displayPosts(posts) {
       matchingTitles.push(postData.title); // Add the title to the matchingTitles array
     }
 
-    // Save the post text to local storage
-    const postTitle = postData.title;
-    savePostTextToLocalStorage(postData.post_id, postTitle, matchingTitles);
+    // // Save the post text to local storage
+    // const postTitle = postData.title;
+    // savePostTextToLocalStorage(postData.post_id, postTitle, matchingTitles);
   });
 
   const popupContainer = document.getElementById('popup-container');
