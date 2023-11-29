@@ -1,20 +1,11 @@
-async function something() {
-  const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-  await chrome.scripting.executeScript({
-    target: { tabId: tab.id },
-    files: ['popup/popup.js']
-  });
-}
-
-let badgeTextValue = '';
+let badgeTextValue, title, fullHTMLTEXT = '';
+let matchCount = 0;
+const matchingTitles = [];
 
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   if (request.payload > 0) {
     setTxtBadge(`${request.payload}`);
-    // showNotification();
-  } else {
-    setTxtBadge(`${request.payload = 0}`);
-  }
+  } else setTxtBadge(`${request.payload = 0}`);
 
   if (request.action === 'getCurrentTabId') {
     chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
@@ -24,61 +15,33 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     });
     return true;
   }
+  request.action === 'sendfullHTMLTEXT' ? updateFullHTMLText(request.fullTxt) : "request.action === sendfullHTMLTEXT [fail]"
 
-  if (request.action === 'sendfullHTMLTEXT') {
-    updateFullHTMLText(request.fullTxt);
+  if (request.action === 'openPopupInCurrentTab') {
+    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+      const currentTab = tabs[0];
+      if (currentTab) {
+        chrome.scripting.executeScript({
+          target: { tabId: currentTab.id },
+          function: () => {
+            chrome.runtime.sendMessage({ action: 'openPopup' });
+          },
+        });
+      }
+    });
   }
+
 });
 
-let matchCount = 0;
-const matchingTitles = [];
-
-let title = "postTitle";
-let fullHTMLTEXT = '';
-
-// FILTER fullHTMLTEXT AND FIND THE MATCHING TITLE FROM API FECTCH WITH REGEX AND PUT IN A ARRAY[],
-//  THEN SET THE ARRAY.LENGTH AS THE badgeTextValue
+showNotification();
 
 function updateFullHTMLText(newValue) {
   fullHTMLTEXT = newValue;
   console.log(fullHTMLTEXT);
 }
 
-function updatedApiTitle(newTitle) {
-  console.log(newTitle);
-}
-
-const regex = new RegExp(title, 'gi');
-
-async function fetchPosts() {
-  await fetch(`https://www.reddit.com/r/${subredditName}/new.json`)
-    .then(response => {
-      if (!response.ok) {
-        throw new Error('Network response was not ok');
-      }
-      return response.json();
-    })
-    .then(data => {
-      const posts = data.data.children;
-      posts.forEach((post) => {
-        console.log(post.data.title)
-        updatedApiTitle(post.data.title)
-      })
-      if (posts.length !== 0) {
-      }
-    })
-    .catch(error => {
-      console.log('Error occurred while fetching subreddit posts:', error);
-    })
-}
-
 // ------------- NOTIFICATIONS -------------
 function showNotification() {
-  if (!chrome.notifications) {
-    console.error("Notifications not supported in this environment.");
-    return;
-  }
-
   const options = {
     type: "basic",
     title: "Online Information Warning ⚠️",
@@ -87,31 +50,16 @@ function showNotification() {
   };
 
   chrome.notifications.create(options, (notificationId) => {
-    if (chrome.runtime.lastError) {
-      console.error("Error creating notification:", chrome.runtime.lastError);
-      return;
-    }
-
+    chrome.runtime.lastError ? console.error("Error creating notification:", chrome.runtime.lastError) : ''
     // Add a click event listener for the notification
     chrome.notifications.onClicked.addListener((clickedNotificationId) => {
-      if (clickedNotificationId === notificationId) {
-        // Open the extension's popup when the notification is clicked
-        chrome.action.setPopup({ popup: '/popup/popup.html' });
-      }
+        if (clickedNotificationId === notificationId) {
+            // Open the popup in the current tab when the notification is clicked
+            chrome.runtime.sendMessage({ action: 'openPopupInCurrentTab' });
+        }
     });
   });
-}
-
-// Function to get the tab ID of the currently active tab
-function getTabId(callback) {
-  chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-    if (tabs && tabs.length > 0) {
-      const tabId = tabs[0].id;
-      callback(tabId);
-    } else {
-      console.error("No active tabs found.");
-    }
-  });
+  return !chrome.notifications ? console.error("Notifications not supported in this environment.") : ''
 }
 
 // ------------- Badge -------------

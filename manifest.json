@@ -14,8 +14,11 @@
   "permissions": [
     "activeTab",
     "scripting",
-    "storage",
-    "notifications"
+    "notifications",
+    "tabs"
+  ],
+  "host_permissions": [
+    "<all_urls>"
   ],
   "action": {
     "default_popup": "/popup/popup.html",
@@ -32,8 +35,7 @@
       "js": [
         "popup/popup.js",
         "scripts/scambtn.js",
-        "scripts/readDom.js",
-        "scripts/getDatafrmLocalStrg.js"
+        "scripts/readDom.js"
       ]
     }
   ]

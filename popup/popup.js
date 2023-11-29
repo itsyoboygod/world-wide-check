@@ -1,7 +1,7 @@
-currentTabId = null;
-tabUrl = null;
-tabId = null;
-isDataLoaded = false;
+let currentTabId = null;
+let tabUrl = null;
+let tabId = null;
+let isDataLoaded = false;
 
 // Request the current tab ID from background.js
 chrome.runtime.sendMessage({ action: 'getCurrentTabId' }, (response) => {
@@ -148,12 +148,7 @@ async function displayPosts(posts) {
     if (postData.fURL === tabUrl) {
       const postElement = createPostElement(postData, ulElement.querySelectorAll('li').length);
       ulElement.appendChild(postElement);
-      matchingTitles.push(postData.title); // Add the title to the matchingTitles array
     }
-
-    // // Save the post text to local storage
-    // const postTitle = postData.title;
-    // savePostTextToLocalStorage(postData.post_id, postTitle, matchingTitles);
   });
 
   const popupContainer = document.getElementById('popup-container');
@@ -176,29 +171,18 @@ async function displayPosts(posts) {
   });
 }
 
-function savePostTextToLocalStorage(postId, postTitle, matchingTitles) {
-  if (matchingTitles.includes(postTitle)) {
-    const postData = {
-      postId: postId,
-      postTitle: postTitle
-    };
-    chrome.storage.local.set({ postData }, () => {
-      console.log(`
-Post text for post ID ${postId} saved to local storage
-text saved : ${postTitle}
-        `);
-    });
-  }
-}
-
 function extractURLFromText(text) {
   const regex = /\[.*?\]\((.*?)\)/;
   const matches = text.match(regex);
-  if (matches && matches.length > 1) {
-    return matches[1];
-  }
-  return '';
+  return matches && matches.length > 1 ? matches[1] : '';
 }
 
 // Use the currentTabId in your fetchSubredditPosts function or any other relevant functions
 fetchSubredditPosts(currentTabId);
+
+chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+  if (request.action === 'openPopup') {
+    // Open the extension's popup
+    chrome.action.openPopup();
+  }
+});
