@@ -73,12 +73,12 @@ function createPostElement(postData, tabCount) {
 
 function fetchSubredditPosts() {
   const postListElement = document.getElementById('popup-container');
-  postListElement ? postListElement.innerHTML : "Clear existing posts/error";
+  postListElement ? postListElement.innerHTML : "Clear existing posts [error]";
   const subredditName = 'worldwidecheck';
   // const subredditName = 'BACHARELOVE';
 
   const loadingSpinner = createLoadingSpinner();
-  postListElement ? postListElement.appendChild(loadingSpinner) : "bruh";
+  postListElement ? postListElement.appendChild(loadingSpinner) : "eppend loadin spinner [error]";
 
   fetch(`https://www.reddit.com/r/${subredditName}/new.json`)
     .then(response => {
@@ -90,7 +90,7 @@ function fetchSubredditPosts() {
     .then(data => {
       const posts = data.data.children;
       isDataLoaded = true;
-      posts.length !== 0 ? displayPosts(posts) : showNoDataMessage();
+      posts.length !== 0 ? displayPosts(posts) : 'No data found !';
     })
     .catch(error => {
       console.log('Error occurred while fetching subreddit posts:', error);
@@ -112,14 +112,14 @@ function createLoadingSpinner() {
   return loadingSpinner;
 }
 
-function removeLoadingMsg() {
-  const loadingmsg = document.getElementById("loading-message")
-  loadingmsg ? loadingmsg.remove() : "remove loading message error"
-}
-
 function removeLoadingSpinner() {
   const loadingSpinner = document.querySelector('.loader');
-  loadingSpinner ? loadingSpinner.remove() : "remove loading spiner error"
+  loadingSpinner ? loadingSpinner.remove() : "remove loading spiner [error]"
+}
+
+function removeLoadingMsg() {
+  const loadingmsg = document.getElementById("loading-message")
+  loadingmsg ? loadingmsg.remove() : "remove loading message [error]"
 }
 
 async function displayPosts(posts) {
@@ -177,11 +177,12 @@ function extractURLFromText(text) {
   return matches && matches.length > 1 ? matches[1] : '';
 }
 
-// Use the currentTabId in your fetchSubredditPosts function or any other relevant functions
-fetchSubredditPosts(currentTabId);
+//  setTimeout(()=>{
+   fetchSubredditPosts(currentTabId);
+//  }, 2000)
 
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-  if (request.action === 'openPopup') {
+  if (request.action === 'openPopupInCurrentTab') {
     // Open the extension's popup
     chrome.action.openPopup();
   }
