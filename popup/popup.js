@@ -1,11 +1,5 @@
-let currentTabId = null;
 let tabUrl = null;
-let tabId = null;
-let isDataLoaded = false;
-
-// Request the current tab ID from background.js
 chrome.runtime.sendMessage({ action: 'getCurrentTabId' }, (response) => {
-  currentTabId = response.tabId;
   tabUrl = response.tabUrl
 });
 
@@ -75,8 +69,6 @@ function fetchSubredditPosts() {
   const postListElement = document.getElementById('popup-container');
   postListElement ? postListElement.innerHTML : "Clear existing posts [error]";
   const subredditName = 'worldwidecheck';
-  // const subredditName = 'BACHARELOVE';
-
   const loadingSpinner = createLoadingSpinner();
   postListElement ? postListElement.appendChild(loadingSpinner) : "eppend loadin spinner [error]";
 
@@ -89,12 +81,10 @@ function fetchSubredditPosts() {
     })
     .then(data => {
       const posts = data.data.children;
-      isDataLoaded = true;
       posts.length !== 0 ? displayPosts(posts) : 'No data found !';
     })
     .catch(error => {
       console.log('Error occurred while fetching subreddit posts:', error);
-      isDataLoaded = true;
 
       const errorParagraph = document.createElement('p')
       errorParagraph.textContent = 'Network error, please wait and try again.';
@@ -127,9 +117,7 @@ async function displayPosts(posts) {
   ulElement.id = 'post_list';
   ulElement.classList.add('ul__table');
   ulElement.innerHTML = '';
-  // console.log("total subreddits posts: ", posts.length)
   const postnewData = posts;
-  const matchingTitles = [];
 
   postnewData.forEach((post, index) => {
     const fURL = extractURLFromText(post.data.selftext);
@@ -177,13 +165,4 @@ function extractURLFromText(text) {
   return matches && matches.length > 1 ? matches[1] : '';
 }
 
-//  setTimeout(()=>{
-   fetchSubredditPosts(currentTabId);
-//  }, 2000)
-
-chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-  if (request.action === 'openPopupInCurrentTab') {
-    // Open the extension's popup
-    chrome.action.openPopup();
-  }
-});
+fetchSubredditPosts();

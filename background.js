@@ -1,13 +1,13 @@
 let title, fullHTMLTEXT = '';
 let matchingTitles = [];
 let badgeTextValues = {};
-
+let currentTabId, tabUrl = null
 
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   if (request.action === 'getCurrentTabId') {
     chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-      const currentTabId = tabs[0].id;
-      var tabUrl = tabs[0].url;
+      currentTabId = tabs[0].id;
+      tabUrl = tabs[0].url;
       sendResponse({ tabId: currentTabId, tabUrl: tabUrl });
     });
     return true;
@@ -16,7 +16,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     const currentTab = tabs[0];
     const tabId = currentTab.id;
 
-    if (tabId) {
+    if (tabId === tabId) {
       const subredditName = 'worldwidecheck';
       fetch(`https://www.reddit.com/r/${subredditName}/new.json`)
         .then(response => {
@@ -24,8 +24,6 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         })
         .then(data => {
           const posts = data.data.children;
-          posts.length !== 0 ? console.log(posts) : 'No data found !';
-
           posts.forEach(post => {
             const postData = {
               title: post.data.title
@@ -54,11 +52,10 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       }
     }
 
-
     // ------------- Badge -------------
     function setTxtBadge(badgeTextValue, tabId) {
-      chrome.action.setBadgeText(
-        { text: badgeTextValue, tabId: tabId }, () => { });
+      chrome.action.setBadgeText({ text: badgeTextValue, tabId: tabId }, () => { });
+      badgeTextValue > 0 ? showNotification() : 'error notification !'
     }
   });
 
@@ -75,13 +72,14 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       }
     });
   }
+  badgeTextValues = {}
 });
 
-// showNotification();
-
 function updateFullHTMLText(newValue) {
-  fullHTMLTEXT = newValue;
-  console.log(fullHTMLTEXT);
+  if (fullHTMLTEXT !== newValue) {
+    fullHTMLTEXT = newValue;
+    console.log(fullHTMLTEXT);
+  }
 }
 
 // ------------- NOTIFICATIONS -------------
@@ -89,19 +87,18 @@ function showNotification() {
   const options = {
     type: "basic",
     title: "Online Information Warning ⚠️",
-    message: "World Wide Check community has reported suspicious information on this site.",
+    message: "World Wide Check community has reported suspicious information on this site! Open the extension to see it.",
     iconUrl: "/img/ofc_logo_256x256.png"
-  };
-
+  }
   chrome.notifications.create(options, (notificationId) => {
-    chrome.runtime.lastError ? console.error("Error creating notification:", chrome.runtime.lastError) : ''
+    chrome.runtime.lastError ? console.error("Error creating notification:", chrome.runtime.lastError) : '';
+
     // Add a click event listener for the notification
     chrome.notifications.onClicked.addListener((clickedNotificationId) => {
       if (clickedNotificationId === notificationId) {
-        // Open the popup in the current tab when the notification is clicked
-        chrome.runtime.sendMessage({ action: 'openPopupInCurrentTab' });
+        // Open the popup when the notification is clicked
+        chrome.action.openPopup();
       }
     });
   });
-  return !chrome.notifications ? console.error("Notifications not supported in this environment.") : ''
 }
