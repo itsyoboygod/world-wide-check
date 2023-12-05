@@ -16,6 +16,7 @@
   --white: hsl(0, 0%, 100%);
   --indigo: hsl(275, 100%, 25%);
   --hotpink: hsl(330, 100%, 71%);
+  --twt-bckg-grey: hsl(206, 18%, 17%);
   
   --rdm-clr: --rdm-clr;
   --clr-scroll-bar-50: rgba(128, 128, 128, 0.5);
@@ -125,7 +126,7 @@ main {
 }
 
 .li__info__col{
-  background-color: hsla(0,0%,0%,.5);
+  background-color: var(--twt-bckg-grey);
   border-radius: 0.2em;
   font-size: .8rem;
   display: grid;
@@ -135,6 +136,22 @@ main {
   overflow: hidden;
   text-overflow: ellipsis;
   width: clamp(100px, 99%, 66ch);
+  position: relative;
+}
+
+.li__info__col::before{
+  content: "🛈 Report Info";
+  display: inline-block;
+  position: relative;
+  top: .1rem;
+  left: .5rem;
+  font-size: 1.1rem;
+  font-family: monospace;
+  font-weight: bolder;
+  vertical-align: middle;
+  font-style: italic;
+  line-height: 1.5;
+  width: fit-content;
 }
 
 #info__id::before{

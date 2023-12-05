@@ -14,6 +14,11 @@ function createPostElement(postData, tabCount) {
 
   const summaryElement = document.createElement('summary');
   const reportNumber = createP()
+  // const report_a = document.createElement('a')
+  // report_a.setAttribute('href', '#')
+  // report_a.setAttribute('target', '_blank')
+  // report_a.textContent = 'link'
+  // reportNumber.appendChild(report_a)
   reportNumber.id = 'id_report_data';
   reportNumber.textContent = `REPORT#${tabCount + 1}`;
   summaryElement.appendChild(reportNumber);

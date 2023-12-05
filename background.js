@@ -97,7 +97,7 @@ function showNotification() {
     chrome.notifications.onClicked.addListener((clickedNotificationId) => {
       if (clickedNotificationId === notificationId) {
         // Open the popup when the notification is clicked
-        chrome.action.openPopup();
+        // chrome.action.openPopup();
       }
     });
   });
