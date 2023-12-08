@@ -1,7 +1,7 @@
 {
   "name": "World Wide Check",
-  "description": "World Wide Check is a powerful Chrome extension designed to combat misinformation on the internet. It enables users to report and flag potentially false or misleading content directly from webpages, contributing to a safer online environment.",
-  "version": "1.0",
+  "description":"Combat online misinformation. Report false content directly from webpages for a safer online environment.",
+  "version": "0.0.0.1",
   "manifest_version": 3,
   "icons": {
     "16": "/img/ofc_logo_16x16.png",
@@ -17,9 +17,6 @@
     "notifications",
     "tabs"
   ],
-  "host_permissions": [
-    "<all_urls>"
-  ],
   "action": {
     "default_popup": "/popup/popup.html",
     "deafult_title": "World Wide Check"
@@ -34,7 +31,6 @@
       ],
       "js": [
         "popup/popup.js",
-        "scripts/scambtn.js",
         "scripts/readDom.js"
       ]
     }
