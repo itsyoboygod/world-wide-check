@@ -19,7 +19,7 @@ function createPostElement(postData, tabCount) {
   summaryElement.appendChild(reportNumber);
 
   const titleElement = createP()
-  titleElement.id = `id_report_title_${postData.post_id}`; // Use unique ID for each title element
+  titleElement.id = `id_report_title_${postData.post_id}`; 
   titleElement.textContent = postData.title;
 
   const hrElement1 = document.createElement('hr');
@@ -27,7 +27,7 @@ function createPostElement(postData, tabCount) {
   hrElement1.setAttribute('data-hr_status', 'verified');
 
   const textElement = createP()
-  textElement.id = `id_report_text_${postData.post_id}`; // Use unique ID for each text element
+  textElement.id = `id_report_text_${postData.post_id}`;
   textElement.classList.add('veryfied');
   textElement.textContent = postData.text;
 

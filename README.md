@@ -69,3 +69,7 @@ Contributions to the World Wide Check project are highly appreciated. If you wou
 
 This project is licensed under the [MIT License](LICENSE.md). Feel free to use, modify, and distribute it according to the terms of this license.
 
+## Donate
+
+![btc_donate_address](https://github.com/itsyoboygod/world-wide-check/assets/58955082/708f189c-4f69-4ba0-a453-3cb738e90f51)
+
