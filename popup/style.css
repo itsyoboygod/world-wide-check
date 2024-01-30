@@ -115,6 +115,13 @@ body {
   gap: .5rem;
   grid-template-columns: repeat(3, auto);
   font-size: 1.5rem;
+  /* max-width: fit-content; */
+}
+
+.inner-tab {
+  display: grid;
+  grid-column: auto / span 1;
+  gap: 0.5rem;
 }
 
 .tabs__label {
@@ -129,6 +136,10 @@ body {
   place-content: center;
   position: relative;
   padding: 5px;
+}
+
+input:focus, input:focus-visible, input:focus-within{
+  background-color: red;
 }
 
 .tabs__label[for="tab1"]::after {
@@ -177,7 +188,6 @@ body {
   display: grid;
   gap: 0.5rem;
   place-self: center;
-
 }
 
 .tooltip .tooltiptext::before {
@@ -226,7 +236,7 @@ body {
   z-index: 1;
 }
 
-.tabs__content {
+.tabs__content, .inner-tab .tabs__content {
   order: 1;
   display: none;
   transform: inherit;
@@ -243,6 +253,12 @@ body {
 
 .tabs__content h1, h2, h3 {
   font-weight: bolder;
+}
+
+#loading-message,
+.sver_network-error {
+  justify-self: center;
+  text-align: center;
 }
 
 .tabs__content, .tabs__content ul li>* {
@@ -272,8 +288,8 @@ body {
   font-style: italic;
 }
 
-.tabs__label[for="tab1"]+.tabs__content ul{
-  max-width: 500px !important;
+.tabs__label[for="tab1"]+.tabs__content ul {
+  max-width: clamp(0px, 500px, 1200px);
   margin: 0 auto;
 }
 
@@ -357,10 +373,6 @@ body {
   line-height: 1.5;
 }
 
-.hr-status[data-hr_status="analysing"]::after {
-  background-color: var(--clr-data-analysing);
-}
-
 li details summary label[data-flair="FAKE"]::after {
   content: attr(data-flair);
   background-color: var(--clr-data-fake);
@@ -387,7 +399,7 @@ li details summary label[data-flair="AMBIGUOUS"]::after {
 }
 
 li details summary label[data-flair="ANALYSING"]::after {
-  content: attr(data-flair);
+  content: attr(data-flair) "...";
   background-color: var(--clr-data-analysing);
 }
 
@@ -457,14 +469,19 @@ li details summary label::after {
   font-size: 1rem;
 }
 
+[id^="id_report_title_"],
+[id^="id_report_text_"] {
+  font-size: 1.1rem;
+  max-width: unset;
+  text-wrap: wrap;
+}
+
 [id^="id_report_title_"] {
   margin: .5rem .5rem 0 !important;
-  font-size: 1.1rem;
 }
 
 [id^="id_report_text_"] {
   margin: 0 .5rem .5rem !important;
-  font-size: 1.1rem;
 }
 
 .li__info__col {
@@ -714,8 +731,8 @@ li details summary label::after {
 .hr-status[data-hr_status="bullet"]::after {
   content: '';
   background-color: var(--clr-data-bullet);
-  width: 0px;
-  height: 23px;
+  width: 10px;
+  height: 21px;
   top: 2px;
   border-radius: 50%;
 }
@@ -743,12 +760,11 @@ footer {
   flex-direction: row;
   font-size: 1rem;
   align-self: flex-end;
-  margin: 0 .5rem;
+  margin: .5rem;
 }
 
 footer p {
-  margin: 2px;
-  padding: 2px;
+  margin: auto 5px;
 }
 
 footer p, footer a {

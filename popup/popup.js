@@ -139,8 +139,8 @@ async function displayPosts(posts) {
     }
   });
 
-  const popupContainer = document.getElementById('popup-container');
-  popupContainer ? popupContainer.appendChild(ulElement) : "popupContainer.appendChild(ulElement)/Line:177";
+  const popupContainer = document.getElementById('report-content');
+  popupContainer?popupContainer.appendChild(ulElement):""
 
   if (ulElement.querySelectorAll('li').length === 0) {
     const noDataParagraph = createP()
