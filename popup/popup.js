@@ -36,6 +36,8 @@ function createPostElement(postData, tabCount) {
 
   const idReportDataElement = summaryElement.querySelector('#id_report_data');
   idReportDataElement.dataset.flair = postData.flair;
+  let colorFlair = postData.clr_flair
+  idReportDataElement.style.setProperty('--clr-flair', colorFlair);
 
   const infoElements = [
     { id: 'info__id', dataAttribute: 'data-id', dataValue: postData.post_id },
@@ -130,7 +132,8 @@ async function displayPosts(posts) {
       source: post.data.source,
       score: post.data.score,
       flair: post.data.link_flair_text,
-      thread_link: post.data.url
+      thread_link: post.data.url,
+      clr_flair: post.data.link_flair_background_color
     };
 
     if (postData.fURL === tabUrl) {
