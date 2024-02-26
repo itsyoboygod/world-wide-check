@@ -55,7 +55,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     // ------------- Badge -------------
     function setTxtBadge(badgeTextValue, tabId) {
       chrome.action.setBadgeText({ text: badgeTextValue, tabId: tabId }, () => { });
-      // badgeTextValue > 0 ? showNotification() : 'error notification !'
+      badgeTextValue > 0 ? showNotification() : 'error notification !'
     }
   });
 
