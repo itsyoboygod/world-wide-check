@@ -12,6 +12,16 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     });
     return true;
   }
+
+  if (request.action === 'matchingTitleSelected') {
+    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+      chrome.tabs.sendMessage(tabs[0].id, { action: 'matchingTitleSelected',
+        payload: request.payload, 
+        flair: request.flair, 
+        clrFlair: request.clrFlair});
+    });
+  }
+
   chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
     const currentTab = tabs[0];
     const tabId = currentTab.id;

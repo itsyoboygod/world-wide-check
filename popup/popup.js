@@ -64,6 +64,7 @@ function createPostElement(postData, tabCount) {
 
   detailsElement.append(summaryElement, titleElement, hrElement1, textElement, infoColElement);
   liElement.appendChild(detailsElement);
+  chrome.runtime.sendMessage({ action: 'matchingTitleSelected', payload: postData.title, flair: postData.flair, clrFlair: colorFlair});
   return liElement;
 }
 

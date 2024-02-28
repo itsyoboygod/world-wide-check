@@ -1,6 +1,7 @@
 :root {
   --lime: hsl(120, 100%, 50%);
   --red: hsl(0, 100%, 50%);
+  --tomato: hsl(9, 100%, 64%);
   --gold: hsl(51, 100%, 50%);
   --lightgrey: hsl(0, 0%, 83%);
   --lightgrey2: #303030;

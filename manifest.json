@@ -32,7 +32,8 @@
       "js": [
         "popup/popup.js",
         "scripts/readDom.js"
-      ]
+      ],
+      "css":["css/style.css"]
     }
   ]
 }
