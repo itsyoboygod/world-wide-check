@@ -1,32 +1,42 @@
 function readDom() {
-    const textNodes = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
-    let fullHTMLTEXT = '';
-    while (textNodes.nextNode()) {
-        let textNode = textNodes.currentNode;
-        fullHTMLTEXT += textNode.nodeValue.trim() + ' ';
+    const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
+    const nodes = [];
+    while (walker.nextNode()) {
+        const node = walker.currentNode;
+        nodes.push(node);
     }
-    chrome.runtime.sendMessage({ action: 'sendfullHTMLTEXT', fullTxt: fullHTMLTEXT.trim() });
+    const fullHTMLTEXT = nodes.map(node => node.nodeValue.trim()).join(' ');
+    chrome.runtime.sendMessage({ action: 'sendfullHTMLTEXT', fullTxt: fullHTMLTEXT });
 }
+
 chrome.runtime.onMessage.addListener((request) => {
     if (request.action === 'matchingTitleSelected') {
         const matchingText = request.payload;
-        const paragraphs = document.querySelectorAll('p');
-
-        paragraphs.forEach(paragraph => {
-            const paragraphText = paragraph.textContent;
-            if (paragraphText.includes(matchingText)) {
-                const parts = paragraphText.split(matchingText);
+        const allNodes = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
+        let currentNode;
+        while (currentNode = allNodes.nextNode()) {
+            const nodeText = currentNode.nodeValue.trim();
+            if (nodeText.includes(matchingText)) {
+                const parts = nodeText.split(matchingText);
                 const span = document.createElement('span');
+                span.id = 'highlighted-text';
+                span.dataset.flair = request.flair;
                 span.textContent = matchingText;
-
-                const newTextContent = parts.join(`
-                    <span id="highlighted-text" data-flair="${request.flair}">
-                        ${matchingText}
-                    </span>`);
-                paragraph.innerHTML = newTextContent;
+                const fragment = document.createDocumentFragment();
+                if (parts[0]) {
+                    fragment.appendChild(document.createTextNode(parts[0]));
+                }
+                fragment.appendChild(span);
+                if (parts[1]) {
+                    fragment.appendChild(document.createTextNode(parts[1]));
+                }
+                const parent = currentNode.parentNode;
+                parent.replaceChild(fragment, currentNode);
             }
-        });
+        }
         document.documentElement.style.setProperty('--clr-flair', request.clrFlair);
     }
 });
+
+
 readDom();
