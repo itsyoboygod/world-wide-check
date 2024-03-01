@@ -234,6 +234,17 @@ body {
   width: auto;
 }
 
+/*[for="tab2"]+.tabs__content>*,
+[for="tab3"]+.tabs__content>* {
+  margin: 0 .5rem;
+  background-color: var(--twt-bckg-grey);
+  border-radius: 0.2em;
+  font-size: .8rem;
+  color: lightskyblue;
+  gap: 0.1rem;
+  padding: 0.5rem 0;
+} */
+
 .tabs__content h1, h2, h3 {
   font-weight: bolder;
 }

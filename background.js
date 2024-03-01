@@ -64,10 +64,19 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 
     // ------------- Badge -------------
     function setTxtBadge(badgeTextValue, tabId) {
-      chrome.action.setBadgeText({ text: badgeTextValue, tabId: tabId }, () => { });
+      if (request.action === 'matchingTitleSelected') {
+        badgeTextValue > 0 ?  
+        chrome.action.setBadgeText({ text: badgeTextValue, tabId: tabId }) |
+        chrome.action.setBadgeBackgroundColor({ color: request.clrFlair, tabId: tabId }) : 
+
+        chrome.action.setBadgeText({ text: "!", tabId: tabId }) |
+        chrome.action.setBadgeBackgroundColor({ color: '#000000', tabId: tabId })
+      }
       // badgeTextValue > 0 ? showNotification() : 'error notification !'
     }
   });
+
+  
 
   if (request.action === 'openPopupInCurrentTab') {
     chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
@@ -88,7 +97,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 function updateFullHTMLText(newValue) {
   if (fullHTMLTEXT !== newValue) {
     fullHTMLTEXT = newValue;
-    console.log(fullHTMLTEXT);
+    // console.log(fullHTMLTEXT);
   }
 }
 
