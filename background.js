@@ -69,10 +69,10 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         chrome.action.setBadgeText({ text: badgeTextValue, tabId: tabId }) |
         chrome.action.setBadgeBackgroundColor({ color: request.clrFlair, tabId: tabId }) : 
 
-        chrome.action.setBadgeText({ text: "!", tabId: tabId }) |
-        chrome.action.setBadgeBackgroundColor({ color: '#000000', tabId: tabId })
+        chrome.action.setBadgeText({ text: "", tabId: tabId }) |
+        chrome.action.setBadgeBackgroundColor({ color: 'transparent', tabId: tabId })
       }
-      // badgeTextValue > 0 ? showNotification() : 'error notification !'
+      badgeTextValue > 0 ? showNotification() : 'error notification !'
     }
   });
 
@@ -107,7 +107,7 @@ function showNotification() {
     type: "basic",
     title: "Online Information Warning ⚠️",
     message: "World Wide Check community has reported suspicious information on this site! Open the extension to see it.",
-    iconUrl: "/img/ofc_logo_256x256.png"
+    iconUrl: "/img/path_256x256.png"
   }
   chrome.notifications.create(options, (notificationId) => {
     chrome.runtime.lastError ? console.error("Error creating notification:", chrome.runtime.lastError) : '';

@@ -4,12 +4,12 @@
   "version": "0.0.0.3",
   "manifest_version": 3,
   "icons": {
-    "16": "/img/ofc_logo_16x16.png",
-    "32": "/img/ofc_logo_32x32.png",
-    "48": "/img/ofc_logo_48x48.png",
-    "64": "/img/ofc_logo_64x64.png",
-    "128": "/img/ofc_logo_128x128.png",
-    "256": "/img/ofc_logo_256x256.png"
+    "16": "/img/wwc_logo_icon_16x16.png",
+    "32": "/img/path_32x32.png",
+    "48": "/img/path_48x48.png",
+    "64": "/img/path_64x64.png",
+    "128": "/img/path_128x128.png",
+    "256": "/img/path_256x256.png"
   },
   "permissions": [
     "activeTab",
