@@ -15,10 +15,12 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 
   if (request.action === 'matchingTitleSelected') {
     chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-      chrome.tabs.sendMessage(tabs[0].id, { action: 'matchingTitleSelected',
-        payload: request.payload, 
-        flair: request.flair, 
-        clrFlair: request.clrFlair});
+      chrome.tabs.sendMessage(tabs[0].id, {
+        action: 'matchingTitleSelected',
+        payload: request.payload,
+        flair: request.flair,
+        clrFlair: request.clrFlair
+      });
     });
   }
 
@@ -63,20 +65,16 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     }
 
     // ------------- Badge -------------
-    function setTxtBadge(badgeTextValue, tabId) {
+    function setTxtBadge(badgeTextValues, tabId) {
       if (request.action === 'matchingTitleSelected') {
-        badgeTextValue > 0 ?  
-        chrome.action.setBadgeText({ text: badgeTextValue, tabId: tabId }) |
-        chrome.action.setBadgeBackgroundColor({ color: request.clrFlair, tabId: tabId }) : 
-
-        chrome.action.setBadgeText({ text: "", tabId: tabId }) |
-        chrome.action.setBadgeBackgroundColor({ color: 'transparent', tabId: tabId })
+        if (badgeTextValues > 0) {
+          chrome.action.setBadgeText({ text: badgeTextValues, tabId: tabId });
+          chrome.action.setBadgeBackgroundColor({ color: request.clrFlair, tabId: tabId });
+          showNotification()
+        }
       }
-      badgeTextValue > 0 ? showNotification() : 'error notification !'
     }
   });
-
-  
 
   if (request.action === 'openPopupInCurrentTab') {
     chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
@@ -97,7 +95,6 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 function updateFullHTMLText(newValue) {
   if (fullHTMLTEXT !== newValue) {
     fullHTMLTEXT = newValue;
-    // console.log(fullHTMLTEXT);
   }
 }
 
@@ -114,10 +111,7 @@ function showNotification() {
 
     // Add a click event listener for the notification
     chrome.notifications.onClicked.addListener((clickedNotificationId) => {
-      if (clickedNotificationId === notificationId) {
-        // Open the popup when the notification is clicked
-        // chrome.action.openPopup();
-      }
+      if (clickedNotificationId === notificationId) { }
     });
   });
 }

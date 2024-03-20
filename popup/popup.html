@@ -23,9 +23,9 @@
                         <input type="radio" class="tabs__radio" name="inner-tabs-example" id="human-tab" checked>
                         <label for="human-tab" class="tabs__label">Human Report </label>
                         <div class="tabs__content" id="report-content">
-                            <p id="loading-message">Scanning for some data. Please wait ...</p>
-                            <!-- <ul id="post_list" class="ul__table">
-                                <li class="li__table">
+                            <p id="loading-message">for some data. Please wait ...</p>
+                            <ul id="post_list" class="ul__table">
+                                <!-- <li class="li__table">
                                     <details name="detalhes">
                                         <summary>
                                             <label id="id_report_data" data-flair="MISLEADING">REPORT#1</label>
@@ -56,8 +56,8 @@
                                                 target="_blank">https://www.reddit.com/r/worldwidecheck/comments/182yrfo/the_standard_chunk_of_lorem_ipsum_used_since_the/</a>
                                         </div>
                                     </details>
-                                </li>
-                            </ul> -->
+                                </li> -->
+                            </ul>
                         </div>
 
                         <input type="radio" class="tabs__radio" name="inner-tabs-example" id="ai-tab">
@@ -70,6 +70,21 @@
                         <label for="more" class="tabs__label">More</label>
                         <div class="tabs__content">
                             <h1>More</h1>
+                            <p>Choose your theme 🎨:</p>
+                            <form action="" class="color-picker">
+                                <fieldset>
+                                    <legend class="visually-hidden">Pick a color scheme</legend>
+                        
+                                    <label for="theme" class="visually-hidden">Light</label>
+                                    <input type="radio" name="theme" id="light" data-clr-light-theme="light" checked>
+                                    
+                                    <label for="theme" class="visually-hidden">Dark</label>
+                                    <input type="radio" name="theme" id="dark" data-clr-dark-theme="dark">
+                        
+                                    <label for="theme" class="visually-hidden">3rd Option</label>
+                                    <input type="radio" name="theme" id="clr-3rd-opt" data-clr-opt3-theme="3rd opt">
+                                </fieldset>
+                            </form>  
                         </div>
                     </div>
                 </div>
