@@ -70,7 +70,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         if (badgeTextValues > 0) {
           chrome.action.setBadgeText({ text: badgeTextValues, tabId: tabId });
           chrome.action.setBadgeBackgroundColor({ color: request.clrFlair, tabId: tabId });
-          showNotification()
+          showNotification();
         }
       }
     }

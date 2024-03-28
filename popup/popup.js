@@ -124,10 +124,11 @@ async function displayPosts(posts) {
 
   postnewData.forEach((post, index) => {
     const fURL = extractURLFromText(post.data.selftext);
+    const cleanedSelftext = cleanSelftextWithURL(post.data.selftext);
     const postData = {
       reportNumber: index + 1,
       title: post.data.title,
-      text: post.data.selftext,
+      text: cleanedSelftext,
       post_id: post.data.id,
       fURL,
       source: post.data.source,
@@ -167,6 +168,10 @@ function extractURLFromText(text) {
   const regex = /\[.*?\]\((.*?)\)/;
   const matches = text.match(regex);
   return matches && matches.length > 1 ? matches[1] : '';
+}
+
+function cleanSelftextWithURL(text) {
+  return text.replace(/fURL: \[(.*?)\]\((.*?)\)/, 'fURL: $2\n'); // Replace the markdown syntax with just the URL and add a newline
 }
 
 fetchSubredditPosts();

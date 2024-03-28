@@ -1,32 +1,41 @@
 :root {
-    --clr-rdm: --clr-rdm;
-    --clr-flair: --clr-flair;
-    --clr-bckg-hr-grdnt: linear-gradient(to right, transparent, var(--rdm-clr), transparent);
-  }
-  
-/* --------------------- USER'S WEB PAGE --------------------- */
-#highlighted-text{
-    background-color: tomato;
-    position: relative;
-  }
+  --clr-rdm: --clr-rdm;
+  --clr-flair: --clr-flair;
+  --clr-bckg-hr-grdnt: linear-gradient(to right, transparent, var(--rdm-clr), transparent);
 
-#highlighted-text::after{
-    /* content: "!"; */
-    content: attr(data-flair);
-    background-color: var(--clr-flair, #131313);
-    text-shadow: 0 0 10px black;
-    position: absolute;
-    left: .5rem;
-    top: -1.1rem;
-    width: fit-content;
-    height: .3em;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    border-radius: .3em;
-    color: white;
-    padding: .5rem;
-    font-weight: 700;
-    font-size: 1rem;
-    border: 2px solid hsla(0, 0%, 100%, 0.5); /* Set initial border */
+  --tomato: hsla(9, 100%, 64%, 0.99);
+  --red: hsla(0, 100%, 50%, 0.99);
+  --orange: hsla(39, 100%, 50%, 0.99);
+  --blue: hsla(240, 100%, 50%, 0.99);
+  --yellow: hsla(60, 100%, 50%, 0.99);
+}
+
+#highlighted-text {
+  position: relative;
+  width: 100%; 
+  height: 100vh; 
+  outline: solid 0.1rem var(--clr-flair);
+  border-radius: .1rem;
+  outline-offset: .1rem;
+}
+
+#highlighted-text::after {
+  content: attr(data-flair);
+  background-color: var(--clr-flair, #131313);
+  text-shadow: 0 0 5px black;
+  position: absolute;
+  left: .5rem;
+  top: -1.1rem;
+  width: fit-content;
+  height: .3em;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border-radius: .3em;
+  color: white;
+  padding: .5rem;
+  font-weight: 700;
+  font-size: 1rem;
+  border: .1rem solid hsla(0, 0%, 0%, 0.2);
+  box-shadow: 0px 0px 20px -5px var(--clr-flair);
 }
