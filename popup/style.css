@@ -417,6 +417,16 @@ li details summary label::after {
   font-size: .8rem;
 }
 
+#info__report_date::before {
+  /* content: attr(data-report_date); */
+  content: "report date: ";
+  width: fit-content;
+  color: var(--white);
+  font-weight: bolder;
+  color: var(--white);
+  font-size: .8rem;
+}
+
 #info__url::before {
   /* content: attr(data-url); */
   content: "site: ";
@@ -723,24 +733,24 @@ body::-webkit-scrollbar-thumb {
   background-color: var(--radio-color);
 }
 
-input[type="radio"]#light::after{
+input[type="radio"]#light::after {
   content: attr(data-clr-light-theme);
   left: -.3rem;
 }
 
-input[type="radio"]#dark::after{
+input[type="radio"]#dark::after {
   content: attr(data-clr-dark-theme);
   left: -0.1rem;
 }
 
-input[type="radio"]#clr-3rd-opt::after{
+input[type="radio"]#clr-3rd-opt::after {
   content: attr(data-clr-opt3-theme);
   left: -0.5rem;
 }
 
 input[type="radio"]#light::after,
 input[type="radio"]#dark::after,
-input[type="radio"]#clr-3rd-opt::after{
+input[type="radio"]#clr-3rd-opt::after {
   position: absolute;
   top: 1.8rem;
   width: max-content;

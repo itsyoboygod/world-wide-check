@@ -64,7 +64,6 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       }
     }
 
-    // ------------- Badge -------------
     function setTxtBadge(badgeTextValues, tabId) {
       if (request.action === 'matchingTitleSelected') {
         if (badgeTextValues > 0) {
@@ -98,7 +97,6 @@ function updateFullHTMLText(newValue) {
   }
 }
 
-// ------------- NOTIFICATIONS -------------
 function showNotification() {
   const options = {
     type: "basic",
@@ -106,12 +104,7 @@ function showNotification() {
     message: "World Wide Check community has reported suspicious information on this site! Open the extension to see it.",
     iconUrl: "/img/path_256x256.png"
   }
-  chrome.notifications.create(options, (notificationId) => {
+  chrome.notifications.create(options, () => {
     chrome.runtime.lastError ? console.error("Error creating notification:", chrome.runtime.lastError) : '';
-
-    // Add a click event listener for the notification
-    chrome.notifications.onClicked.addListener((clickedNotificationId) => {
-      if (clickedNotificationId === notificationId) { }
-    });
   });
 }

@@ -19,7 +19,7 @@ function createPostElement(postData, tabCount) {
   summaryElement.appendChild(reportNumber);
 
   const titleElement = createP()
-  titleElement.id = `id_report_title_${postData.post_id}`; 
+  titleElement.id = `id_report_title_${postData.post_id}`;
   titleElement.textContent = postData.title;
 
   const hrElement1 = document.createElement('hr');
@@ -41,6 +41,7 @@ function createPostElement(postData, tabCount) {
 
   const infoElements = [
     { id: 'info__id', dataAttribute: 'data-id', dataValue: postData.post_id },
+    { id: 'info__report_date', dataAttribute: 'data-report_date', dataValue: postData.report_date },
     { id: 'info__url', dataAttribute: 'data-url', dataValue: postData.fURL },
     { id: 'info__score', dataAttribute: 'data-score', dataValue: postData.score },
   ];
@@ -56,6 +57,7 @@ function createPostElement(postData, tabCount) {
 
   const threadLinkElement = document.createElement('a');
   threadLinkElement.id = `info__thread`;
+  threadLinkElement.id = `info__thread`;
   threadLinkElement.classList.add('info__col');
   threadLinkElement.href = postData.thread_link;
   threadLinkElement.textContent = postData.thread_link;
@@ -64,7 +66,7 @@ function createPostElement(postData, tabCount) {
 
   detailsElement.append(summaryElement, titleElement, hrElement1, textElement, infoColElement);
   liElement.appendChild(detailsElement);
-  chrome.runtime.sendMessage({ action: 'matchingTitleSelected', payload: postData.title, flair: postData.flair, clrFlair: colorFlair});
+  chrome.runtime.sendMessage({ action: 'matchingTitleSelected', payload: postData.title, flair: postData.flair, clrFlair: colorFlair });
   return liElement;
 }
 
@@ -125,6 +127,13 @@ async function displayPosts(posts) {
   postnewData.forEach((post, index) => {
     const fURL = extractURLFromText(post.data.selftext);
     const cleanedSelftext = cleanSelftextWithURL(post.data.selftext);
+    const timestampMs = post.data.created_utc * 1000;
+    const date = new Date(timestampMs);
+    const day = String(date.getDate()).padStart(2, '0');
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const year = String(date.getFullYear()).slice(-2);
+    const formattedDate = `${day}/${month}/${year}`;
+
     const postData = {
       reportNumber: index + 1,
       title: post.data.title,
@@ -135,7 +144,8 @@ async function displayPosts(posts) {
       score: post.data.score,
       flair: post.data.link_flair_text,
       thread_link: post.data.url,
-      clr_flair: post.data.link_flair_background_color
+      clr_flair: post.data.link_flair_background_color,
+      report_date: formattedDate
     };
 
     if (postData.fURL === tabUrl) {
@@ -145,7 +155,7 @@ async function displayPosts(posts) {
   });
 
   const popupContainer = document.getElementById('report-content');
-  popupContainer?popupContainer.appendChild(ulElement):""
+  popupContainer ? popupContainer.appendChild(ulElement) : ""
 
   if (ulElement.querySelectorAll('li').length === 0) {
     const noDataParagraph = createP()
@@ -154,7 +164,6 @@ async function displayPosts(posts) {
     popupContainer ? popupContainer.appendChild(noDataParagraph) : "popupContainer.appendChild(noDataParagraph)/error";
   }
 
-  // Update data-tab attribute values
   const labels = document.querySelectorAll('.tabs__label');
   labels.forEach((label) => {
     let tabCount = ulElement.querySelectorAll('li').length;
@@ -171,7 +180,7 @@ function extractURLFromText(text) {
 }
 
 function cleanSelftextWithURL(text) {
-  return text.replace(/fURL: \[(.*?)\]\((.*?)\)/, 'fURL: $2\n'); // Replace the markdown syntax with just the URL and add a newline
+  return text.replace(/fURL: \[(.*?)\]\((.*?)\)/, 'fURL: $2\n');
 }
 
 fetchSubredditPosts();
