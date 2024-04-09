@@ -21,6 +21,7 @@ chrome.runtime.onMessage.addListener((request) => {
                 const span = document.createElement('span');
                 span.id = 'highlighted-text';
                 span.dataset.flair = request.flair;
+                span.style.setProperty('--clr-flair', request.clrFlair);
                 span.textContent = matchingText;
                 const fragment = document.createDocumentFragment();
                 if (parts[0]) {
@@ -34,7 +35,6 @@ chrome.runtime.onMessage.addListener((request) => {
                 parent.replaceChild(fragment, currentNode);
             }
         }
-        document.documentElement.style.setProperty('--clr-flair', request.clrFlair);
     }
 });
 
