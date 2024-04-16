@@ -21,7 +21,6 @@
   --clr-underline: hsl(0, 0%, 0%);
   --clr-bullet: var(--clr-body-bg);
   --clr-scroll-bar-50: rgba(128, 128, 128, 0.5);
-  --clr-bckg-hr-grdnt: linear-gradient(to right, transparent, var(--rdm-clr), transparent);
   --tst-time: .5s;
 }
 
@@ -45,12 +44,6 @@ time, mark, audio, video {
   font: inherit;
   vertical-align: baseline;
 }
-
-/* *,
-*::after,
-*::before{
-  box-sizing: border-box;
-} */
 
 h1, h2, h3, h4, h5, h6 {
   text-wrap: balance;
@@ -170,7 +163,7 @@ body {
 
 .inner-tab .tabs__radio:checked+.tabs__label {
   background-color: transparent;
-  text-decoration: var(--clr-underline) underline solid 3px;
+  text-decoration: underline solid 3px var(--clr-underline);
   text-underline-offset: 8px;
   color: var(--clr-txt);
 }
@@ -539,7 +532,7 @@ li details summary label::after {
   z-index: 3;
 }
 
-#key_features li:is(:first-child):before,
+#key_features li:is(:first-child)::before,
 #key_features li:is(:first-child)::after,
 #report_rules li:is(:first-child)::before,
 #report_rules li:is(:first-child)::after {
@@ -770,18 +763,23 @@ input[type="radio"]#clr-3rd-opt::after {
   font-size: .5rem;
 }
 
-input[type="radio"]#light {
+input[type="radio"] {
   position: relative;
+}
+
+input[type="radio"]#light {
   --radio-color: var(--lightgrey);
 }
 
 input[type="radio"]#dark {
-  position: relative;
   --radio-color: var(--blue);
 }
 
 input[type="radio"]#clr-3rd-opt {
-  position: relative;
+  --radio-color: var(--tomato);
+}
+
+input[type="color"]#input-select-opt {
   --radio-color: var(--tomato);
 }
 

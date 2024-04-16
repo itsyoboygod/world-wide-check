@@ -15,6 +15,10 @@ chrome.runtime.onMessage.addListener((request) => {
         const allNodes = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
         let currentNode;
         while (currentNode = allNodes.nextNode()) {
+            const parent = currentNode.parentNode;
+            if (parent.closest('#highlighted-text')) {
+                continue;
+            }
             const nodeText = currentNode.nodeValue.trim();
             if (nodeText.includes(matchingText)) {
                 const parts = nodeText.split(matchingText);
@@ -31,12 +35,10 @@ chrome.runtime.onMessage.addListener((request) => {
                 if (parts[1]) {
                     fragment.appendChild(document.createTextNode(parts[1]));
                 }
-                const parent = currentNode.parentNode;
                 parent.replaceChild(fragment, currentNode);
             }
         }
     }
 });
-
 
 readDom();
