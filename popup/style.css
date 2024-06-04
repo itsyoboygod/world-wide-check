@@ -15,7 +15,7 @@
   --clr-data-bullet: var(--lightgrey);
   --clr-data-analysing: var(--orange);
   --clr-rdm: --clr-rdm;
-  --clr-flair: --clr-flair;
+  --clr-flair: red;
   --clr-body-bg: hsl(0, 0%, 100%);
   --clr-txt: hsl(0, 0%, 0%);
   --clr-underline: hsl(0, 0%, 0%);
@@ -315,6 +315,7 @@ body {
   display: flex;
   align-items: center;
   position: sticky;
+  justify-content: space-between;
   top: 0;
   transition: var(--tst-time) ease-in-out;
   backdrop-filter: blur(2px);
@@ -329,6 +330,20 @@ body {
   margin: 0 .5rem;
   font-size: 1.3rem;
   line-height: 1.5;
+}
+
+.li__table details summary p {
+  position: relative;
+  margin: 0 .5rem;
+  font-size: .8rem;
+  line-height: 1.5;
+  overflow-x: hidden;
+  font-weight: bolder;
+  background-color: hsla(0, 0%, 0%, .5);
+  background-size: 100rem; 
+  background-position: left; 
+  background-repeat: no-repeat;
+  background-image: linear-gradient(120deg, transparent, rgb(255, 255, 255), transparent);
 }
 
 li details summary label::after {
@@ -350,6 +365,7 @@ li details summary label::after {
   padding: 5px;
   font-weight: 700;
   font-size: 1rem;
+  text-wrap: nowrap;
 }
 
 [id^="id_report_title_"],
@@ -718,7 +734,8 @@ body::-webkit-scrollbar-thumb {
   border-radius: .5rem;
 }
 
-.color-picker input[type="radio"] {
+.color-picker input[type="radio"],
+.color-picker input[type="color"] {
   appearance: none;
   width: 1.5rem;
   height: 1.5rem;
@@ -727,7 +744,8 @@ body::-webkit-scrollbar-thumb {
   border-radius: 50%;
 }
 
-.color-picker input[type="radio"]:checked {
+.color-picker input[type="radio"]:checked,
+.color-picker input[type="color"]:checked {
   background-color: var(--radio-color);
 }
 
@@ -746,9 +764,15 @@ input[type="radio"]#clr-3rd-opt::after {
   left: -0.5rem;
 }
 
+input[type="color"]#input-select-opt::after {
+  content: attr(data-clr-select-theme);
+  left: -0.5rem;
+}
+
 input[type="radio"]#light::after,
 input[type="radio"]#dark::after,
-input[type="radio"]#clr-3rd-opt::after {
+input[type="radio"]#clr-3rd-opt::after,
+input[type="color"]#input-select-opt::after {
   position: absolute;
   top: 1.8rem;
   width: max-content;
@@ -763,7 +787,8 @@ input[type="radio"]#clr-3rd-opt::after {
   font-size: .5rem;
 }
 
-input[type="radio"] {
+input[type="radio"],
+input[type="color"] {
   position: relative;
 }
 

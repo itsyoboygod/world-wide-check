@@ -15,23 +15,60 @@
         <div class="wrapper">
             <div class="tabs">
                 <input type="radio" class="tabs__radio" name="tabs-expample" id="tab1" checked>
-                <label for="tab1" class="tabs__label info-tab-btn" data-tab="0">Page Reports</label>
+                <label for="tab1" class="tabs__label info-tab-btn" data-tab="0" tabindex="0">Page Reports</label>
                 <div class="tabs__content">
+                    <!-- <div id="loading-text" class="loader"></div> -->
+
                     <div class="inner-tab">
                         <input type="radio" class="tabs__radio" name="inner-tabs-example" id="human-tab" checked>
-                        <label for="human-tab" class="tabs__label">Human Report </label>
+                        <label for="human-tab" class="tabs__label" tabindex="0">Human Report </label>
                         <div class="tabs__content" id="report-content">
                             <p id="loading-message">Looking for some data. Please wait ...</p>
+                            <!-- <ul id="post_list" class="ul__table">
+                                <li class="li__table">
+                                    <details name="detalhes">
+                                        <summary>
+                                            <label class="flame" id="id_report_data" data-flair="MISLEADING" style="--clr-flair: var(--clr-flair)">REPORT#1</label>
+                                            <p>click to open</p>
+                                        </summary>
+                                        <p id="id_report_title_182yrfo">
+                                            What is Lorem Ipsum?
+                                            Lorem Ipsum is simply dummy text of the printing and typesetting industry.
+                                        </p>
+                                        <hr class="hr-status" data-hr_status="verified">
+                                        <p id="id_report_text_182yrfo" class="veryfied">
+                                            Contrary to popular belief, Lorem Ipsum is not simply random text. It has
+                                            roots in a
+                                            piece of classical Latin literature from 45 BC, making it over 2000 years
+                                            old.
+                                            Richard McClintock, a Latin professor at Hampden-Sydney College in Virginia,
+                                            looked
+                                            up one of the more obscure Latin words, consectetur, from a Lorem Ipsum
+                                            passage, and
+                                            going through the cites of the word in classical literature, discovered the
+                                            undoubtable source.</p>
+                                        <div class="li__info__col">
+                                            <p id="info__id" class="info__col" data-id="182yrfo">182yrfo</p>
+                                            <p id="info__report_date" class="info__col" data-report_date="09/11/01">09/11/01</p>
+                                            <p id="info__url" class="info__col" data-url="https://www.lipsum.com/">
+                                                https://www.lipsum.com/</p>
+                                            <p id="info__score" class="info__col" data-score="1">299</p><a
+                                                id="info__thread" class="info__col"
+                                                href="https://www.reddit.com/r/worldwidecheck/comments/182yrfo/the_standard_chunk_of_lorem_ipsum_used_since_the/"
+                                                target="_blank">https://www.reddit.com/r/worldwidecheck/comments/182yrfo/the_standard_chunk_of_lorem_ipsum_used_since_the/</a>
+                                        </div>
+                                    </details>
+                                </li>
+                            </ul> -->
                         </div>
-
                         <input type="radio" class="tabs__radio" name="inner-tabs-example" id="ai-tab">
-                        <label for="ai-tab" class="tabs__label">A.I Report</label>
+                        <label for="ai-tab" class="tabs__label" tabindex="0">A.I Report</label>
                         <div class="tabs__content">
                             <h1>COMING SOON ..</h1>
                         </div>
 
                         <input type="radio" class="tabs__radio" name="inner-tabs-example" id="more">
-                        <label for="more" class="tabs__label">More</label>
+                        <label for="more" class="tabs__label" tabindex="0">More</label>
                         <div class="tabs__content">
                             <h1>More</h1>
                             <p>Choose your theme 🎨:</p>
@@ -47,15 +84,20 @@
 
                                     <label for="theme" class="visually-hidden">3rd Option</label>
                                     <input type="radio" name="theme" id="clr-3rd-opt" data-clr-opt3-theme="3rd opt">
+                                    
+                                    <label for="theme" class="visually-hidden">Select</label>
+                                    <input type="color" name="theme" id="input-select-opt" data-clr-select-theme="select">
                                 </fieldset>
                             </form>
                         </div>
                     </div>
                 </div>
+
                 <input type="radio" class="tabs__radio" name="tabs-expample" id="tab2">
-                <label for="tab2" class="tabs__label">Report Info</label>
+                <label for="tab2" class="tabs__label" tabindex="0">Report Info</label>
                 <div class="tabs__content">
                     <h1>How do I report?</h1>
+                    <!-- <p role="alert">We are working on this, just hold 60<sup>3</sup> seconds!</p> -->
                     <p>By reporting potentially false or misleading content, you are contributing to a safer online
                         environment and helping to ensure the accuracy of information on the internet.</p>
                     <p>Please note that the World Wide Check extension is a third-party bridge that fetches data
@@ -126,9 +168,10 @@
                 </div>
 
                 <input type="radio" class="tabs__radio" name="tabs-expample" id="tab3">
-                <label for="tab3" class="tabs__label">About</label>
+                <label for="tab3" class="tabs__label" tabindex="0">About</label>
                 <div class="tabs__content">
                     <h1>World Wide Check</h1>
+                    <!-- <p role="alert">We are working on this, just hold 60<sup>3</sup> seconds!</p> -->
                     <p>World Wide Check is a powerful Chrome extension designed to combat misinformation on the
                         internet. It enables users to report and flag potentially false or misleading content directly
                         from webpages, contributing to a safer online environment.</p>
@@ -213,7 +256,6 @@
             </div>
         </div>
         <footer>
-
             <p class="tooltip">donate
                 <span class="tooltiptext" data-donate="BTC">bc1qptcealt72ksyfx82wlm3er03nawctat2qr8c8g</span>
             </p>
