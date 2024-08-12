@@ -1,3 +1,6 @@
+[![Watch the video](https://img.youtube.com/vi/W_ShrjavdBs/maxresdefault.jpg)](https://youtu.be/W_ShrjavdBs)
+
+
 # World Wide Check
 
 World Wide Check is a powerful Chrome extension designed to combat misinformation on the internet. It enables users to report and flag potentially false or misleading content directly from webpages, contributing to a safer online environment.
@@ -53,6 +56,12 @@ After ensuring all the information is accurate, submit the post. The report will
 
 ## Installation
 
+### Chrome Store Download
+
+Go to [Chrome Store Download](https://chromewebstore.google.com/detail/world-wide-check/hhdgkliecchgaicpbjgeidiecnljmidh?hl=pt-br)
+ and click on "Use in Chrome" button
+
+### Github Download
 To install the World Wide Check Chrome extension, follow these steps:
 
 1. Download the extension package from the [GitHub repository](https://github.com/itsyoboygod/world-wide-check).
