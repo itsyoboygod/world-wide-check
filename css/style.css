@@ -3,6 +3,8 @@
   --clr-flair: --clr-flair;
   --clr-bckg-hr-grdnt: linear-gradient(to right, transparent, var(--rdm-clr), transparent);
   --tomato: hsla(9, 100%, 64%, 0.99);
+  --blur-amount: blur(10px);
+  --tst-time: .250s;
 }
 
 #highlighted-text {
@@ -13,11 +15,11 @@
   outline-offset: .1rem;
 }
 
-#highlighted-text[data-flair="nsfw"]{
+#highlighted-text[data-flair="NSFW🔞"] {
   position: relative;
 }
 
-#highlighted-text[data-flair="nsfw"]::before {
+#highlighted-text[data-flair="NSFW🔞"]::before {
   content: '';
   display: flex;
   position: absolute;
@@ -27,15 +29,13 @@
   left: 0px;
   width: 100%;
   height: 100%;
-  backdrop-filter: blur(3px);
+  backdrop-filter: var(--blur-amount, blur(50%));
+  /* Use the custom property for blur */
   z-index: 2;
-  border-image: linear-gradient(hsl(0 0% 50% / .5),
-      hsl(0 0% 50% / .5)) fill 50;
-  background: linear-gradient(hsl(0 0% 50% / .1),
-      hsl(0 0% 50% / .1));
   outline: solid 0.1rem hsl(0 0% 50% / .1);
   outline-offset: -.1rem;
-  border-radius: .2em;
+  border-radius: .1rem;
+  clear: both;
 }
 
 #highlighted-text::after {
@@ -62,4 +62,21 @@
   filter: blur(0px) !important;
   z-index: 3;
   overflow: hidden;
+  font-family: monospace;
+}
+
+#highlighted-text:hover:after {
+  opacity: .3;
+  transition: var(--tst-time) ease-in-out;
+}
+
+#blur-slider-container {
+  display: flex;
+  position: fixed;
+  background-color: rgba(0, 0, 0, 0.7);
+  padding: 10px;
+  border-radius: 5px;
+  color: white;
+  z-index: 999;
+  font-family: monospace;
 }

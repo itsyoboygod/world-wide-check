@@ -14,15 +14,33 @@
     <main>
         <div class="wrapper">
             <div class="tabs">
-                <input type="radio" class="tabs__radio" name="tabs-expample" id="tab1" checked>
-                <label for="tab1" class="tabs__label info-tab-btn" data-tab="0" tabindex="0">Page Reports</label>
-                <div class="tabs__content">
-                    <!-- <div id="loading-text" class="loader"></div> -->
+                <input type="radio" id="tab1" name="tabs" checked />
+                <label for="tab1" data-tab="0" class="tabs__label" tabindex="1">Page Reports</label>
 
-                    <div class="inner-tab">
-                        <input type="radio" class="tabs__radio" name="inner-tabs-example" id="human-tab" checked>
-                        <label for="human-tab" class="tabs__label" tabindex="0">Human Report </label>
-                        <div class="tabs__content" id="report-content">
+                <input type="radio" id="tab2" name="tabs" />
+                <label for="tab2" tabindex="5">Report Info</label>
+
+                <input type="radio" id="tab3" name="tabs" />
+                <label for="tab3" tabindex="6">About</label>
+            </div>
+
+            <div class="tab-content">
+                <!-- <div id="loading-text" class="loader"></div> S-->
+                <!-- Tab 1 Content with Sub-Tabs -->
+                <div class="tab-content-1">
+                    <div class="sub-tabs">
+                        <input type="radio" id="subtab1-1" name="subtabs" checked />
+                        <label for="subtab1-1" tabindex="2">Human Report</label>
+
+                        <input type="radio" id="subtab1-2" name="subtabs" />
+                        <label for="subtab1-2" tabindex="3">A.I Report</label>
+
+                        <input type="radio" id="subtab1-3" name="subtabs" />
+                        <label for="subtab1-3" tabindex="4">More</label>
+                    </div>
+
+                    <div class="sub-tab-content">
+                        <div class="sub-tab-content-1" id="report-content">
                             <p id="loading-message">Looking for some data. Please wait ...</p>
                             <!-- <ul id="post_list" class="ul__table">
                                 <li class="li__table">
@@ -61,15 +79,22 @@
                                 </li>
                             </ul> -->
                         </div>
-                        <input type="radio" class="tabs__radio" name="inner-tabs-example" id="ai-tab">
-                        <label for="ai-tab" class="tabs__label" tabindex="0">A.I Report</label>
-                        <div class="tabs__content">
+
+                        <div class="sub-tab-content-2">
                             <h1>COMING SOON ..</h1>
+
+                            <h2>Should disinformation on the internet be checked and verified by humans or an AI?</h2>
+                            <p>Chat GPT response :</p>
+                            <p>The issue of checking and verifying disinformation on the internet is a complex one.
+                                Both humans and AI can play important roles in addressing this challenge,
+                                and there are advantages and limitations to each approach. Here are some points to
+                                consider:</p>
+                            <a href="https://www.reddit.com/r/worldwidecheck/comments/14h0olm/should_disinformation_on_the_internet_be_checked/"
+                                target="_blank">
+                                ... see full thread</a>
                         </div>
 
-                        <input type="radio" class="tabs__radio" name="inner-tabs-example" id="more">
-                        <label for="more" class="tabs__label" tabindex="0">More</label>
-                        <div class="tabs__content">
+                        <div class="sub-tab-content-3">
                             <h1>More</h1>
                             <p>Choose your theme 🎨:</p>
                             <form action="" class="color-picker">
@@ -82,107 +107,81 @@
                                     <label for="theme" class="visually-hidden">Dark</label>
                                     <input type="radio" name="theme" id="dark" data-clr-dark-theme="dark">
 
-                                    <label for="theme" class="visually-hidden">3rd Option</label>
-                                    <input type="radio" name="theme" id="clr-3rd-opt" data-clr-opt3-theme="3rd opt">
-                                    
-                                    <label for="theme" class="visually-hidden">Select</label>
-                                    <input type="color" name="theme" id="input-select-opt" data-clr-select-theme="select">
                                 </fieldset>
                             </form>
                         </div>
                     </div>
                 </div>
 
-                <input type="radio" class="tabs__radio" name="tabs-expample" id="tab2">
-                <label for="tab2" class="tabs__label" tabindex="0">Report Info</label>
-                <div class="tabs__content">
-                    <h1>How do I report?</h1>
+                <!-- Tab 2 Content -->
+                <div class="tab-content-2">
+                    <h3>How do I report?</h3>
                     <!-- <p role="alert">We are working on this, just hold 60<sup>3</sup> seconds!</p> -->
                     <p>By reporting potentially false or misleading content, you are contributing to a safer online
                         environment and helping to ensure the accuracy of information on the internet.</p>
-                    <p>Please note that the World Wide Check extension is a third-party bridge that fetches data
-                        previously made by humans in the subreddit. To report information, you need to visit the World
-                        Wide Check subreddit at <a href="https://www.reddit.com/r/worldwidecheck/"
-                            target="_blank">r/worldwidecheck</a>
-                        and follow
-                        these rules:</p>
+                    <p>You need to have an Reddit account to create a post or interact with the community!</p>
 
-                    <ul class="ul__table" id="report_rules">
-                        <li class="li__info">
-                            <p>Only text posts are allowed.</p>
-                        </li>
-                        <li class="li__info">
-                            <p>The title of the post must be the paragraph of the webpage reported.</p>
-                        </li>
-                        <li class="li__info">
-                            <p>In the body of the text post, it must finish with
-                                <code>fURL: https://example.com/</code>, which indicates the URL of the webpage.
-                            </p>
-                        </li>
-                        <li class="li__info">
-                            <p>The post must have a relevant post flag.</p>
-                        </li>
-                    </ul>
+                    <h3>Step 1: Go to the World Wide Check subreddit</h3>
+                    <p>Search for world wide check subreddit on google and look for r/worldwidecheck</p>
+                    <img src="https://github.com/user-attachments/assets/222e4a95-c89a-4324-9566-5179a12a80d5"
+                        alt="Search World Wide Check Subreddit" width="400" height="100px">
+
+                    <h3>Step 2: Create a New Post</h3>
+                    <p>Go to <a href="https://www.reddit.com/r/worldwidecheck/">r/worldwidecheck</a>
+                          to create a new post.</p>
+
+                    <img src="https://github.com/user-attachments/assets/8c5cd622-b108-431e-81b2-3a8afd4ebebb"
+                        alt="Create New Post" width="400" height="100px">
+
+                    <h3>Step 3: Set Post Title</h3>
+                    <p>Copy the paragraph from the web page and paste it as the post title. Make sure the text remains
+                        the same.</p>
+                    <img src="https://github.com/user-attachments/assets/b9378b8c-be2c-477c-9d16-e962f3dbc45a"
+                        alt="Set Post Title" width="400" height="100px">
+
+                    <h3>Step 4: Set Body Post</h3>
+                    <p>In this part you will explain why the title (text you copied), is incorrect.</p>
+                    <img src="https://github.com/user-attachments/assets/6825c08a-e813-40ca-8cd0-8e9a609b81a4"
+                        alt="Set Body Post" width="400" height="100px">
+
+                    <h3>Step 5: Add the fURL Link</h3>
+                    <p>In the body of the post, it's crucial to add the fURL link as the last element. This provides the
+                        URL of the web page being reported.</p>
+                    <img src="https://github.com/user-attachments/assets/441bdb49-887b-4a3d-b493-c532079fc25a"
+                        alt="Set fURL" width="400" height="100px">
+
+                    <h3>Step 6: Set Post Flair</h3>
+                    <p>Remember to include the post flag to indicate that it's a report. This is mandatory.</p>
+                    <img src="https://github.com/user-attachments/assets/2c22eca5-ca41-4202-af6c-cd9f7701d0e2"
+                        alt="Include Post Flag" width="400" height="100px">
+
+                    <p>Please note that the World Wide Check extension is a third-party bridge that fetches data
+                        previously made by humans in the subreddit.</p>
 
                     <p>All information in the subreddit is made and moderated by humans. If you believe a report is
                         wrongly made, you can respectfully engage in the comments section to discuss or provide
                         additional information. If needed, you can also reach out to the subreddit moderation team for
                         further assistance.</p>
-
-                    <p>Here's a report example bellow :</p>
-
-                    <h2>Reporting Potentially False or Misleading Information</h2>
-
-                    <h3>Step 1: Check Existing Reports</h3>
-                    <p>First, check if the information you spotted has already been reported for the current web page in
-                        the World
-                        Wide Check plugin.</p>
-                    <img src="https://github.com/itsyoboygod/world-wide-check/assets/58955082/62652254-30cc-4a1a-8484-9b7bd623f28b"
-                        alt="Check Reports" width="400" height="100px">
-
-                    <h3>Step 2: Create a New Post</h3>
-                    <p>If no data is fetched, you're good to report. Go to <a
-                            href="https://www.reddit.com/r/worldwidecheck/">r/worldwidecheck</a> to create a new post.
-                    </p>
-
-                    <h3>Step 3: Set Post Title</h3>
-                    <p>Copy the paragraph from the web page and paste it as the post title. Make sure the text remains
-                        the same.</p>
-                    <img src="https://github.com/itsyoboygod/world-wide-check/assets/58955082/eaf318b5-ac3e-43ea-8598-3bc882952e38"
-                        alt="Set Post Title" width="400" height="100px">
-
-                    <h3>Step 4: Add the fURL Link</h3>
-                    <p>In the body of the post, it's crucial to add the fURL link as the last element. This provides the
-                        URL of the web page being reported.</p>
-                    <img src="https://github.com/itsyoboygod/world-wide-check/assets/58955082/6a278441-2fc0-48b3-90a8-92dabcaad9a6"
-                        alt="Set fURL" width="400" height="100px">
-
-                    <h3>Step 5: Include Post Flag</h3>
-                    <p>Remember to include the post flag to indicate that it's a report. This is mandatory.</p>
-                    <img src="https://github.com/itsyoboygod/world-wide-check/assets/58955082/043c67a1-4450-4b22-b35f-0e4bf10253a2"
-                        alt="Include Post Flag" width="400" height="100px">
-
-                    <h3>Step 6: Submit the Report</h3>
-                    <p>After ensuring all the information is accurate, submit the post. The report will appear in the
-                        World Wide Check plugin.</p>
                 </div>
 
-                <input type="radio" class="tabs__radio" name="tabs-expample" id="tab3">
-                <label for="tab3" class="tabs__label" tabindex="0">About</label>
-                <div class="tabs__content">
-                    <h1>World Wide Check</h1>
+                <!-- Tab 3 Content -->
+                <div class="tab-content-3">
+                    <h3>World Wide Check</h3>
                     <!-- <p role="alert">We are working on this, just hold 60<sup>3</sup> seconds!</p> -->
                     <p>World Wide Check is a powerful Chrome extension designed to combat misinformation on the
                         internet. It enables users to report and flag potentially false or misleading content directly
                         from webpages, contributing to a safer online environment.</p>
 
-                    <img src="https://github.com/itsyoboygod/world-wide-check/assets/58955082/62ecd88d-a227-4523-84eb-ccc5ccc9ffcd"
+                    <img src="https://github.com/user-attachments/assets/8e6053cd-f10b-45b0-8195-80eb5e7ae872"
+                        alt="World Wide Check" width="400" height="100px">
+
+                    <img src="https://github.com/user-attachments/assets/95018f7f-e60b-479e-bf43-657779ba971c"
                         alt="World Wide Check" width="400" height="100px">
 
                     <p><em>Please note: The above image is for visual representation only and features Lorem Ipsum
                             text.</em></p>
 
-                    <h2>How it Works</h2>
+                    <h3>How it Works</h3>
 
                     <p>World Wide Check leverages a vast network of internet users and the collective wisdom of the
                         online community to identify and report misleading information. By utilizing a subreddit
@@ -194,10 +193,11 @@
                         alt="Reddit - r/worldwidecheck" width="400" height="100px">
 
                     <p><em>Please visit <a href="https://www.reddit.com/r/worldwidecheck/"
-                                target="_blank">r/worldwidecheck</a> to join
+                                target="_blank">r/worldwidecheck</a> to
+                            join
                             the community and contribute to the fight against misinformation.</em></p>
 
-                    <h2>Key Features</h2>
+                    <h3>Key Features</h3>
 
                     <ul id="key_features">
                         <li>
@@ -218,7 +218,7 @@
                         </li>
                     </ul>
 
-                    <h2>Installation</h2>
+                    <h3>Installation</h3>
 
                     <p>To install the World Wide Check Chrome extension, follow these steps:</p>
 
@@ -232,27 +232,28 @@
                         <li>The World Wide Check extension will be added to your browser.</li>
                     </ol>
 
-                    <h2>Contribution</h2>
+                    <h3>Contribution</h3>
 
                     <p>Contributions to the World Wide Check project are highly appreciated. If you would like to
                         contribute, please follow the guidelines outlined in the <a
                             href="https://github.com/itsyoboygod/world-wide-check" target="_blank">Contribution
                             Guidelines</a>.</p>
 
-                    <h2>License</h2>
+                    <h3>License</h3>
 
                     <p>This project is licensed under the <a href="https://github.com/itsyoboygod/world-wide-check"
                             target="_blank">MIT License</a>. Feel
                         free to use,
                         modify, and distribute it according to the terms of this license.</p>
 
-                    <h2>Donate:</h2>
+                    <h3>Donate:</h3>
                     <label>BTC: </label>
                     <p data-donate="BTC">bc1qptcealt72ksyfx82wlm3er03nawctat2qr8c8g</p>
                     <img src="https://github.com/itsyoboygod/world-wide-check/assets/58955082/708f189c-4f69-4ba0-a453-3cb738e90f51"
                         alt="BTC donation address: bc1qptcealt72ksyfx82wlm3er03nawctat2qr8c8g" width="200"
                         height="100px">
                 </div>
+
             </div>
         </div>
         <footer>
@@ -264,7 +265,6 @@
             <p><a href="https://github.com/itsyoboygod/world-wide-check" target="_blank">more</a></p>
         </footer>
     </main>
-
 </body>
 
 </html>
