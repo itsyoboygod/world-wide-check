@@ -5,9 +5,7 @@
 
 World Wide Check is a powerful Chrome extension designed to combat misinformation on the internet. It enables users to report and flag potentially false or misleading content directly from webpages, contributing to a safer online environment.
 
-![readme_md_print_wwc](https://github.com/itsyoboygod/world-wide-check/assets/58955082/62ecd88d-a227-4523-84eb-ccc5ccc9ffcd)
-
-**Please note: The above image is for visual representation only and features Lorem Ipsum text.**
+![WWC_readme](https://github.com/user-attachments/assets/8e6053cd-f10b-45b0-8195-80eb5e7ae872)
 
 ## How it Works
 
@@ -17,36 +15,37 @@ World Wide Check leverages a vast network of internet users and the collective w
 
 **Please visit [r/worldwidecheck](https://www.reddit.com/r/worldwidecheck/) to join the community and contribute to the fight against misinformation.**
 
-## Reporting Potentially False or Misleading Information
+## Reporting Potentially False or Misleading Information Steps
+## You need to have an Reddit account to create a post or interact with the community !
 
-Follow these steps to report potentially false or misleading information using World Wide Check:
+### Step 1: Search for World Wide Check subreddit
 
-### Step 1: Check Existing Reports
-
-First, check if any information has already been reported for the current web page in the World Wide Check plugin.
-
-![no_data_fetch_readme](https://github.com/itsyoboygod/world-wide-check/assets/58955082/62652254-30cc-4a1a-8484-9b7bd623f28b)
-
+![1_google_search_subreddit_](https://github.com/user-attachments/assets/222e4a95-c89a-4324-9566-5179a12a80d5)
 
 ### Step 2: Create a New Post
+Go to the top left side and find Create a post.
 
-If no data is fetched, you're good to report. Go to [r/worldwidecheck](https://www.reddit.com/r/worldwidecheck/) to create a new post.
+![2_create_new_post_](https://github.com/user-attachments/assets/8c5cd622-b108-431e-81b2-3a8afd4ebebb)
 
+### Step 3: Set post title
 Copy the paragraph from the web page and paste it as the post title. Make sure the text remains the same.
 
-![save_post_title_readme](https://github.com/itsyoboygod/world-wide-check/assets/58955082/eaf318b5-ac3e-43ea-8598-3bc882952e38)
+![3_set_post_title_](https://github.com/user-attachments/assets/b9378b8c-be2c-477c-9d16-e962f3dbc45a)
 
+### Step 4: Set body post
+In this part you will explain why the title (text you copied), is incorrect.
+
+![4_set_body_post_](https://github.com/user-attachments/assets/6825c08a-e813-40ca-8cd0-8e9a609b81a4)
+
+### Step 5: Set fURL body
 In the body of the post, it's crucial to add the fURL link as the last element. This provides the URL of the web page being reported.
 
-![set_furl_readme](https://github.com/itsyoboygod/world-wide-check/assets/58955082/6a278441-2fc0-48b3-90a8-92dabcaad9a6)
+![5_set_fURL_body_](https://github.com/user-attachments/assets/441bdb49-887b-4a3d-b493-c532079fc25a)
 
+### Step 6: Set post flair and Post !
 Remember to include the post flag to indicate that it's a report. This is mandatory.
 
-![set_flair_post_readme](https://github.com/itsyoboygod/world-wide-check/assets/58955082/043c67a1-4450-4b22-b35f-0e4bf10253a2)
-
-### Step 3: Submit the Report
-
-After ensuring all the information is accurate, submit the post. The report will appear in the World Wide Check plugin.
+![6_set_post_flair_](https://github.com/user-attachments/assets/2c22eca5-ca41-4202-af6c-cd9f7701d0e2)
 
 ## Key Features
 
