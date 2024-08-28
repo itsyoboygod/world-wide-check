@@ -6,12 +6,6 @@
 World Wide Check is a powerful Chrome extension designed to combat misinformation on the internet. It enables users to report and flag potentially false or misleading content directly from webpages, contributing to a safer online environment.
 
 ![WWC_readme](https://github.com/user-attachments/assets/8e6053cd-f10b-45b0-8195-80eb5e7ae872)
-<<<<<<< HEAD
-=======
-
-![front_print_opened](https://github.com/user-attachments/assets/95018f7f-e60b-479e-bf43-657779ba971c)
-=======
->>>>>>> 2416466b541b3f5fbc23868cbd99683f5c4ea15e
 
 ## How it Works
 
