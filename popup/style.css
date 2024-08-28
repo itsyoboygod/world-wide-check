@@ -198,11 +198,11 @@ label[for="tab1"]::after {
   display: block;
 }
 
-.tab-content-2 p, .tab-content-3 p{
+.tab-content-2 p, .tab-content-3 p {
   padding: .5rem 0;
 }
 
-.tab-content-2 h3, .tab-content-3 h3{
+.tab-content-2 h3, .tab-content-3 h3 {
   font-size: 1.1rem;
   font-weight: bolder;
   padding: .5rem 0;
@@ -378,6 +378,18 @@ label[for="tab1"]::after {
   background-color: hsla(0, 0%, 0%, .5);
   border-radius: .2em;
   z-index: 1;
+}
+
+.li__table details summary span {
+  margin: 0 .5rem;
+  color: var(--lightgrey1);
+  font-size: 1rem;
+  writing-mode: vertical-rl;
+}
+
+.li__table details summary span:hover {
+  opacity: .8;
+  transition: var(--tst-time);
 }
 
 .li__table details summary label {
@@ -683,10 +695,6 @@ body::-webkit-scrollbar-thumb {
 }
 
 /* -------------- ::-webkit-scrollbar -------------- */
-
-.li__table details summary::marker {
-  font-size: 3em;
-}
 
 .li__table details::-webkit-scrollbar {
   width: 4px;
