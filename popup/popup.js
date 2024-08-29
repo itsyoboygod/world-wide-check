@@ -18,6 +18,10 @@ function createPostElement(postData, tabCount) {
   reportNumber.textContent = `REPORT#${tabCount + 1}`;
   summaryElement.appendChild(reportNumber);
 
+  const previewSpan = document.createElement('span');
+  previewSpan.textContent = '>';
+  summaryElement.appendChild(previewSpan);
+
   const titleElement = createP()
   titleElement.id = `id_report_title_${postData.post_id}`;
   titleElement.textContent = postData.title;
@@ -74,8 +78,6 @@ function fetchSubredditPosts() {
   const postListElement = document.getElementById('popup-container');
   postListElement ? postListElement.innerHTML : "Clear existing posts [error]";
   const subredditName = 'worldwidecheck';
-  const loadingSpinner = createLoadingSpinner();
-  postListElement ? postListElement.appendChild(loadingSpinner) : "eppend loadin spinner [error]";
 
   fetch(`https://www.reddit.com/r/${subredditName}/new.json`)
     .then(response => {
@@ -97,19 +99,7 @@ function fetchSubredditPosts() {
       postListElement.appendChild(errorParagraph);
     }).finally(() => {
       removeLoadingMsg()
-      removeLoadingSpinner();
     })
-}
-
-function createLoadingSpinner() {
-  const loadingSpinner = document.createElement('div');
-  loadingSpinner.classList.add('loader');
-  return loadingSpinner;
-}
-
-function removeLoadingSpinner() {
-  const loadingSpinner = document.querySelector('.loader');
-  loadingSpinner ? loadingSpinner.remove() : "remove loading spiner [error]"
 }
 
 function removeLoadingMsg() {

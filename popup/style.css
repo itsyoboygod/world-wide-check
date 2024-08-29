@@ -390,6 +390,8 @@ label[for="tab1"]::after {
 .li__table details summary span:hover {
   opacity: .8;
   transition: var(--tst-time);
+  color: var(--white);
+  font-weight: bolder;
 }
 
 .li__table details summary label {
