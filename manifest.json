@@ -1,7 +1,7 @@
 {
   "name": "World Wide Check",
   "description": "Combat online misinformation. Report false content directly from webpages for a safer online environment.",
-  "version": "0.0.1.0",
+  "version": "0.0.1.1",
   "manifest_version": 3,
   "icons": {
     "16": "/img/wwc_logo_icon_16x16.png",
