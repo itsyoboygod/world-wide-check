@@ -92,9 +92,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 });
 
 function updateFullHTMLText(newValue) {
-  if (fullHTMLTEXT !== newValue) {
-    fullHTMLTEXT = newValue;
-  }
+  fullHTMLTEXT !== newValue ? fullHTMLTEXT = newValue : ""
 }
 
 function showNotification() {

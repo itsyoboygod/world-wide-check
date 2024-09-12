@@ -3,45 +3,47 @@ chrome.runtime.sendMessage({ action: 'getCurrentTabId' }, (response) => {
   tabUrl = response.tabUrl
 });
 
-function createP() { return document.createElement('p') }
+function createElement(tag, { className = '', textContent = '', id = '', href = '', target = '', } = {}) {
+  const element = document.createElement(tag);
+  className ? element.classList.add(className) : ""
+  textContent ? element.textContent = textContent : ""
+  id ? element.id = id : ""
+  target ? element.target = target : ""
+  href ? element.href = href : ""
+
+  return element;
+}
 
 function createPostElement(postData, tabCount) {
-  const liElement = document.createElement('li');
-  liElement.classList.add('li__table');
-
-  const detailsElement = document.createElement('details');
-  detailsElement.setAttribute('name', 'detalhes');
-
-  const summaryElement = document.createElement('summary');
-  const reportNumber = document.createElement('label')
-  reportNumber.id = 'id_report_data';
-  reportNumber.textContent = `REPORT#${tabCount + 1}`;
-  summaryElement.appendChild(reportNumber);
-
-  const previewSpan = document.createElement('span');
-  previewSpan.textContent = '>';
-  summaryElement.appendChild(previewSpan);
-
-  const titleElement = createP()
-  titleElement.id = `id_report_title_${postData.post_id}`;
-  titleElement.textContent = postData.title;
-
-  const hrElement1 = document.createElement('hr');
-  hrElement1.classList.add('hr-status');
-  hrElement1.setAttribute('data-hr_status', 'verified');
-
-  const textElement = createP()
-  textElement.id = `id_report_text_${postData.post_id}`;
-  textElement.classList.add('veryfied');
-  textElement.textContent = postData.text;
-
-  const infoColElement = document.createElement('div');
-  infoColElement.classList.add('li__info__col');
-
+  const liElement = createElement('li', { className: 'li__table' });
+  const detailsElement = createElement('details', { name: 'details' });
+  const summaryElement = createElement('summary');
+  const reportNumber = createElement('label', { id: 'id_report_data', textContent: `REPORT#${tabCount + 1}` });
+  reportNumber.dataset.flair = postData.flair;
+  reportNumber.style.setProperty('--clr-flair', postData.clr_flair);
+  summaryElement.append(reportNumber, createElement('span', { textContent: '>' }));
+  const hrElement = createElement('hr', { className: 'hr-status' });
+  hrElement.setAttribute('data-hr_status', 'verified');
   const idReportDataElement = summaryElement.querySelector('#id_report_data');
   idReportDataElement.dataset.flair = postData.flair;
   let colorFlair = postData.clr_flair
   idReportDataElement.style.setProperty('--clr-flair', colorFlair);
+
+  detailsElement.append(
+    summaryElement,
+    createElement('p', { id: `id_report_title_${postData.post_id}`, textContent: postData.title }),
+    hrElement,
+    createElement('p', { id: `id_report_text_${postData.post_id}`, className: 'verified', textContent: postData.text }),
+    createInfoCol(postData)
+  );
+  liElement.appendChild(detailsElement);
+  chrome.runtime.sendMessage({ action: 'matchingTitleSelected', payload: postData.title, flair: postData.flair, clrFlair: colorFlair });
+
+  return liElement;
+}
+
+function createInfoCol(postData) {
+  const infoColElement = createElement('div', { className: 'li__info__col' });
 
   const infoElements = [
     { id: 'info__id', dataAttribute: 'data-id', dataValue: postData.post_id },
@@ -51,67 +53,38 @@ function createPostElement(postData, tabCount) {
   ];
 
   infoElements.forEach((info) => {
-    const infoElement = createP()
-    infoElement.id = info.id;
-    infoElement.classList.add('info__col');
-    infoElement.textContent = `${info.dataValue}`;
+    const infoElement = createElement('p', { id: info.id, textContent: info.dataValue });
     infoElement.setAttribute(info.dataAttribute, info.dataValue);
     infoColElement.appendChild(infoElement);
   });
 
-  const threadLinkElement = document.createElement('a');
-  threadLinkElement.id = `info__thread`;
-  threadLinkElement.id = `info__thread`;
-  threadLinkElement.classList.add('info__col');
-  threadLinkElement.href = postData.thread_link;
-  threadLinkElement.textContent = postData.thread_link;
-  threadLinkElement.target = '_blank';
-  infoColElement.appendChild(threadLinkElement);
+  const threadLink = createElement('a', { id: 'info__thread', textContent: postData.thread_link, className: 'info__col', href: `${postData.thread_link}`, target: '_blank' });
+  infoColElement.appendChild(threadLink);
 
-  detailsElement.append(summaryElement, titleElement, hrElement1, textElement, infoColElement);
-  liElement.appendChild(detailsElement);
-  chrome.runtime.sendMessage({ action: 'matchingTitleSelected', payload: postData.title, flair: postData.flair, clrFlair: colorFlair });
-  return liElement;
+  return infoColElement;
 }
 
-function fetchSubredditPosts() {
+async function fetchSubredditPosts() {
   const postListElement = document.getElementById('popup-container');
-  postListElement ? postListElement.innerHTML : "Clear existing posts [error]";
-  const subredditName = 'worldwidecheck';
+  postListElement ? postListElement.innerHTML = '' : ""
 
-  fetch(`https://www.reddit.com/r/${subredditName}/new.json`)
-    .then(response => {
-      if (!response.ok) {
-        throw new Error('Network response was not ok');
-      }
-      return response.json();
-    })
-    .then(data => {
-      const posts = data.data.children;
-      posts.length !== 0 ? displayPosts(posts) : 'No data found !';
-    })
-    .catch(error => {
-      console.log('Error occurred while fetching subreddit posts:', error);
+  try {
+    const response = await fetch(`https://www.reddit.com/r/worldwidecheck/new.json`);
+    if (!response.ok) throw new Error('Network response was not ok');
 
-      const errorParagraph = document.createElement('p')
-      errorParagraph.textContent = 'Network error, please wait and try again.';
-      errorParagraph.classList.add('sver_network-error');
-      postListElement.appendChild(errorParagraph);
-    }).finally(() => {
-      removeLoadingMsg()
-    })
-}
-
-function removeLoadingMsg() {
-  const loadingmsg = document.getElementById("loading-message")
-  loadingmsg ? loadingmsg.remove() : "remove loading message [error]"
+    const data = await response.json();
+    const posts = data.data.children || [];
+    posts.length > 0 ? displayPosts(posts) : showNoDataMessage(postListElement)
+  } catch (error) {
+    showErrorMessage(postListElement, 'Network error, please try again later.');
+    console.error('Error fetching subreddit posts:', error);
+  } finally {
+    removeLoadingMsg();
+  }
 }
 
 async function displayPosts(posts) {
-  const ulElement = document.createElement('ul');
-  ulElement.id = 'post_list';
-  ulElement.classList.add('ul__table');
-  ulElement.innerHTML = '';
+  const ulElement = createElement('ul', { className: 'ul__table', id: 'post_list', innerHTML: '' });
   const postnewData = posts;
 
   postnewData.forEach((post, index) => {
@@ -148,10 +121,8 @@ async function displayPosts(posts) {
   popupContainer ? popupContainer.appendChild(ulElement) : ""
 
   if (ulElement.querySelectorAll('li').length === 0) {
-    const noDataParagraph = createP()
-    noDataParagraph.textContent = 'All clear. No data found on this page!';
-    noDataParagraph.classList.add('no-data-found');
-    popupContainer ? popupContainer.appendChild(noDataParagraph) : "popupContainer.appendChild(noDataParagraph)/error";
+    const noDataParagraph = createElement('p', { className: 'no-data-found', textContent: 'All clear. No data found on this page!' });
+    popupContainer ? popupContainer.appendChild(noDataParagraph) : '';
   }
 
   const labels = document.querySelectorAll('.tabs__label');
@@ -161,6 +132,11 @@ async function displayPosts(posts) {
     let msg = tabCount
     chrome.runtime.sendMessage({ action: 'showNotification', payload: msg });
   });
+}
+
+function removeLoadingMsg() {
+  const loadingmsg = document.getElementById("loading-message")
+  loadingmsg ? loadingmsg.remove() : "remove loading message [error]"
 }
 
 function extractURLFromText(text) {

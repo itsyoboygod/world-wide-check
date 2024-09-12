@@ -1,3 +1,22 @@
+
+function createElement(tag, { className = '', textContent = '', id = '', href = '', target = '', display = '', position = '', type = '', min = '', max = '', value = '', htmlFor = '' } = {}) {
+    const element = document.createElement(tag);
+    className ? element.classList.add(className) : ""
+    textContent ? element.textContent = textContent : ""
+    id ? element.id = id : ""
+    target ? element.target = target : ""
+    href ? element.href = href : ""
+    display ? element.display = display : ""
+    position ? element.position = position : ""
+    type ? element.type = type : ""
+    min ? element.min = min : ""
+    max ? element.max = max : ""
+    value ? element.value = value : ""
+    htmlFor ? element.htmlFor = htmlFor : ""
+
+    return element;
+}
+
 function readDom() {
     const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
     const nodes = [];
@@ -22,11 +41,9 @@ chrome.runtime.onMessage.addListener((request) => {
             const nodeText = currentNode.nodeValue.trim();
             if (nodeText.includes(matchingText)) {
                 const parts = nodeText.split(matchingText);
-                const span = document.createElement('span');
-                span.id = 'highlighted-text';
+                const span = createElement('span', { id: 'highlighted-text', textContent: `${matchingText}` });
                 span.dataset.flair = request.flair;
                 span.style.setProperty('--clr-flair', request.clrFlair);
-                span.textContent = matchingText;
                 const fragment = document.createDocumentFragment();
                 if (parts[0]) {
                     fragment.appendChild(document.createTextNode(parts[0]));
@@ -39,9 +56,7 @@ chrome.runtime.onMessage.addListener((request) => {
             }
         }
 
-        if (!document.getElementById('blur-slider')) {
-            injectBlurSlider();
-        }
+        !document.getElementById('blur-slider') ? injectBlurSlider() : ""
     }
 });
 
@@ -55,33 +70,21 @@ function handleBlurLevelChange(event) {
 }
 
 function injectBlurSlider() {
-    const sliderContainer = document.createElement('div');
-    sliderContainer.id = 'blur-slider-container';
+    const sliderContainer = createElement('div', { id: 'blur-slider-container' });
     sliderContainer.style.display = 'none';
     sliderContainer.style.position = 'fixed';
 
-    const label = document.createElement('label');
-    label.htmlFor = 'blur-slider';
-    label.textContent = 'Blur Level: ';
+    const label = createElement('label', { htmlFor: 'blur-slider', textContent: 'Blur Level: ' });
     sliderContainer.appendChild(label);
 
-    const slider = document.createElement('input');
-    slider.type = 'range';
-    slider.id = 'blur-slider';
-    slider.name = 'blur-slider';
-    slider.min = '0';
-    slider.max = '10';
-    slider.value = '10';
+    const slider = createElement('input', { type: 'range', id: 'blur-slider', name: 'blur-slider', min: '0', max: '10', value: '10' });
     slider.style.margin = '0 10px';
     sliderContainer.appendChild(slider);
 
-    const valueDisplay = document.createElement('span');
-    valueDisplay.id = 'blur-value';
-    valueDisplay.textContent = '10';
+    const valueDisplay = createElement('span', { id: 'blur-value', textContent: '10' });
     sliderContainer.appendChild(valueDisplay);
 
-    const unit = document.createElement('span');
-    unit.textContent = ' px';
+    const unit = createElement('span', { textContent: ' px' });
     sliderContainer.appendChild(unit);
 
     document.body.appendChild(sliderContainer);
