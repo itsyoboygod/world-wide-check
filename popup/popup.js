@@ -64,6 +64,8 @@ function createInfoCol(postData) {
   return infoColElement;
 }
 
+
+
 async function fetchSubredditPosts() {
   const postListElement = document.getElementById('popup-container');
   postListElement ? postListElement.innerHTML = '' : ""

@@ -29,13 +29,14 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     const tabId = currentTab.id;
 
     if (tabId === tabId) {
-      const subredditName = 'worldwidecheck';
-      fetch(`https://www.reddit.com/r/${subredditName}/new.json`)
-        .then(response => {
-          return !response.ok ? new Error('Network response was not ok') : response.json();
-        })
-        .then(data => {
-          const posts = data.data.children;
+      async function fetchSubredditPosts() {
+        try {
+          const subredditName = 'worldwidecheck';
+          const response = await fetch(`https://www.reddit.com/r/${subredditName}/new.json`)
+          if (!response.ok) throw new Error('Network response was not ok');
+          const data = await response.json()
+          const posts = data.data.children || []
+
           posts.forEach(post => {
             const postData = {
               title: post.data.title
@@ -47,11 +48,9 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
           });
           const matchesBadges = badgeTextValues[tabId] || 0;
           setTxtBadge(matchesBadges.toString(), tabId);
-        })
-        .catch(error => {
-          console.log('Error occurred while fetching subreddit posts:', error);
-        }).finally(() => {
-        })
+        } catch (error) { console.log(`Error fetching data`, error) }
+      }
+      fetchSubredditPosts();
 
       function getPostTitle(newTitle, fulltxt) {
         if (fulltxt.trim().toLowerCase().includes(newTitle.toLowerCase())) {

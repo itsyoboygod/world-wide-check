@@ -1,4 +1,3 @@
-
 function createElement(tag, { className = '', textContent = '', id = '', href = '', target = '', display = '', position = '', type = '', min = '', max = '', value = '', htmlFor = '' } = {}) {
     const element = document.createElement(tag);
     className ? element.classList.add(className) : ""
@@ -45,17 +44,12 @@ chrome.runtime.onMessage.addListener((request) => {
                 span.dataset.flair = request.flair;
                 span.style.setProperty('--clr-flair', request.clrFlair);
                 const fragment = document.createDocumentFragment();
-                if (parts[0]) {
-                    fragment.appendChild(document.createTextNode(parts[0]));
-                }
+                parts[0] ? fragment.appendChild(document.createTextNode(parts[0])) : ""
                 fragment.appendChild(span);
-                if (parts[1]) {
-                    fragment.appendChild(document.createTextNode(parts[1]));
-                }
+                parts[1] ? fragment.appendChild(document.createTextNode(parts[1])) : ""
                 parent.replaceChild(fragment, currentNode);
             }
         }
-
         !document.getElementById('blur-slider') ? injectBlurSlider() : ""
     }
 });
