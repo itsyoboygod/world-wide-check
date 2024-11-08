@@ -52,6 +52,103 @@ chrome.runtime.onMessage.addListener((request) => {
         }
         !document.getElementById('blur-slider') ? injectBlurSlider() : ""
     }
+
+    if (request.action === "flagParagraph") {
+        const selectedText = request.selectedText.trim();
+        const flaggedTexts = JSON.parse(localStorage.getItem("flaggedTexts") || "[]");
+
+        if (flaggedTexts.includes(selectedText)) {
+            alert("This paragraph is already flagged.");
+        } else {
+            flaggedTexts.push(selectedText);
+            localStorage.setItem("flaggedTexts", JSON.stringify(flaggedTexts));
+
+            const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
+            let node;
+            while ((node = walker.nextNode())) {
+                if (node.nodeValue.includes(selectedText)) {
+                    const highlightedSpan = createElement("span", {
+                        textContent: selectedText,
+                        className: "flagged-text",
+                    });
+                    const fragment = document.createDocumentFragment();
+                    const parts = node.nodeValue.split(selectedText);
+                    fragment.append(document.createTextNode(parts[0]), highlightedSpan, document.createTextNode(parts[1]));
+                    node.parentNode.replaceChild(fragment, node);
+                }
+            }
+        }
+    }
+
+    chrome.runtime.onMessage.addListener((request) => {
+        if (request.action === "openFlagModal") {
+            openFlagModal(request.flags, request.selectedText);
+        }
+    });
+
+    function openFlagModal(flags, selectedText) {
+        if (document.getElementById("target-overlay")) return;
+
+        const overlay = createElement('div', { id: 'target-overlay' });
+        const modal = createElement('div', { id: 'target-modal' });
+        const title = createElement("h3", { textContent: 'Flag this paragraph' });
+        const textParagraph = createElement("p", { id: 'target-txt_selected', textContent: `${selectedText}` });
+        
+        const flagSelect = createElement("select", { id: 'target-select-input' });
+        flags.forEach((flag) => {
+            const option = createElement("option", { value: flag, textContent: flag });
+            flagSelect.appendChild(option);
+        });
+
+        const confirmBtn = document.createElement("button");
+        confirmBtn.textContent = "Confirm";
+        confirmBtn.onclick = () => {
+            const selectedFlair = flagSelect.value;
+            injectTargetTextIntoDOM(selectedFlair, selectedText);
+            document.body.removeChild(overlay);
+            console.log(`Flagging "${selectedText}" with flag: ${flagSelect.value}`);
+        };
+        modal.appendChild(title);
+        modal.appendChild(textParagraph);
+        modal.appendChild(flagSelect);
+        modal.appendChild(confirmBtn);
+        overlay.appendChild(modal);
+        document.body.appendChild(overlay);
+    }
+
+    // Function to inject the target text into the user's DOM
+    function injectTargetTextIntoDOM(selectedFlair, selectedText ) {
+        const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
+        let node;
+        while ((node = walker.nextNode())) {
+            const parent = node.parentNode;
+
+            // Skip nodes that already contain highlighted or targeted text
+            if (parent.closest("#highlighted-text") || parent.closest("#target-txt_selected")) {
+                continue;
+            }
+
+            const nodeText = node.nodeValue.trim();
+            if (nodeText.includes(selectedText)) {
+                const parts = nodeText.split(selectedText);
+
+                // Create a span for the selected target text
+                const targetSpan = createElement("span", { id: 'target-txt_selected', textContent: selectedText, });
+                targetSpan.dataset.flair = selectedFlair;
+                targetSpan.style.setProperty('--clr-flair', selectedFlair);
+                
+                // Construct the fragment with the split text and span
+                const fragment = document.createDocumentFragment();
+                parts[0] && fragment.appendChild(document.createTextNode(parts[0]));
+                fragment.appendChild(targetSpan);
+                parts[1] && fragment.appendChild(document.createTextNode(parts[1]));
+
+                // Replace the original node with the fragment
+                parent.replaceChild(fragment, node);
+                break; // Exit once text is replaced
+            }
+        }
+    }
 });
 
 function handleBlurLevelChange(event) {
@@ -64,9 +161,7 @@ function handleBlurLevelChange(event) {
 }
 
 function injectBlurSlider() {
-    const sliderContainer = createElement('div', { id: 'blur-slider-container' });
-    sliderContainer.style.display = 'none';
-    sliderContainer.style.position = 'fixed';
+    const sliderContainer = createElement('div', { id: 'blur-slider-container', display: 'none', position: 'fixed' });
 
     const label = createElement('label', { htmlFor: 'blur-slider', textContent: 'Blur Level: ' });
     sliderContainer.appendChild(label);
@@ -82,9 +177,7 @@ function injectBlurSlider() {
     sliderContainer.appendChild(unit);
 
     document.body.appendChild(sliderContainer);
-
     slider.addEventListener('input', handleBlurLevelChange);
-
     let hideTimeout;
 
     document.body.addEventListener('mouseover', (event) => {

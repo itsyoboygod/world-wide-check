@@ -835,7 +835,14 @@ input[type="color"]#input-select-opt {
 
   .sub-tabs input:checked+label,
   .tabs input:not(:checked)+label:hover,
-  .sub-tabs input:not(:checked)+label:hover {
+  .sub-tabs input:not(:checked)+label:hover,
+  footer p a:hover,
+  footer p:hover {
     color: var(--white) !important;
   }
+}
+
+.flagged-text {
+  background-color: yellow;
+  border: 1px solid red;
 }

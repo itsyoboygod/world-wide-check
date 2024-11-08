@@ -90,18 +90,44 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   badgeTextValues = {}
 });
 
+chrome.runtime.onInstalled.addListener(() => {
+  // Clear any existing context menu items
+  chrome.contextMenus.removeAll(() => {
+    chrome.contextMenus.create({
+      id: "flag-suspicious-paragraph",
+      title: "Report with World Wide Check!",
+      contexts: ["selection"],
+    });
+  });
+});
+
+// Handle context menu click
+chrome.contextMenus.onClicked.addListener((info, tab) => {
+  if (info.menuItemId === "flag-suspicious-paragraph") {
+    // Define preset flairs manually
+    const flairs = ["Misleading", "False", "Needs Verification", "Spam"];
+
+    // Send flairs to content script
+    chrome.tabs.sendMessage(tab.id, {
+      action: "openFlagModal",
+      flags: flairs,
+      selectedText: info.selectionText,
+    });
+  }
+});
+
 function updateFullHTMLText(newValue) {
   fullHTMLTEXT !== newValue ? fullHTMLTEXT = newValue : ""
 }
 
-function showNotification() {
-  const options = {
-    type: "basic",
-    title: "Online Information Warning ⚠️",
-    message: "World Wide Check community has reported suspicious information on this site! Open the extension to see it.",
-    iconUrl: "/img/path_256x256.png"
-  }
-  chrome.notifications.create(options, () => {
-    chrome.runtime.lastError ? console.error("Error creating notification:", chrome.runtime.lastError) : '';
-  });
-}
+// function showNotification() {
+//   const options = {
+//     type: "basic",
+//     title: "Online Information Warning ⚠️",
+//     message: "World Wide Check community has reported suspicious information on this site! Open the extension to see it.",
+//     iconUrl: "/img/path_256x256.png"
+//   }
+//   chrome.notifications.create(options, () => {
+//     chrome.runtime.lastError ? console.error("Error creating notification:", chrome.runtime.lastError) : '';
+//   });
+// }

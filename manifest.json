@@ -12,6 +12,7 @@
     "256": "/img/ofc_logo_256x256.png"
   },
   "permissions": [
+    "contextMenus",
     "activeTab",
     "scripting",
     "notifications",
@@ -22,7 +23,8 @@
     "deafult_title": "World Wide Check"
   },
   "background": {
-    "service_worker": "background.js"
+    "service_worker": "background.js",
+    "type": "module"
   },
   "content_scripts": [
     {

@@ -10,7 +10,6 @@ function createElement(tag, { className = '', textContent = '', id = '', href = 
   id ? element.id = id : ""
   target ? element.target = target : ""
   href ? element.href = href : ""
-
   return element;
 }
 
@@ -28,7 +27,6 @@ function createPostElement(postData, tabCount) {
   idReportDataElement.dataset.flair = postData.flair;
   let colorFlair = postData.clr_flair
   idReportDataElement.style.setProperty('--clr-flair', colorFlair);
-
   detailsElement.append(
     summaryElement,
     createElement('p', { id: `id_report_title_${postData.post_id}`, textContent: postData.title }),
@@ -44,7 +42,6 @@ function createPostElement(postData, tabCount) {
 
 function createInfoCol(postData) {
   const infoColElement = createElement('div', { className: 'li__info__col' });
-
   const infoElements = [
     { id: 'info__id', dataAttribute: 'data-id', dataValue: postData.post_id },
     { id: 'info__report_date', dataAttribute: 'data-report_date', dataValue: postData.report_date },
@@ -60,25 +57,19 @@ function createInfoCol(postData) {
 
   const threadLink = createElement('a', { id: 'info__thread', textContent: postData.thread_link, className: 'info__col', href: `${postData.thread_link}`, target: '_blank' });
   infoColElement.appendChild(threadLink);
-
   return infoColElement;
 }
-
-
 
 async function fetchSubredditPosts() {
   const postListElement = document.getElementById('popup-container');
   postListElement ? postListElement.innerHTML = '' : ""
-
   try {
     const response = await fetch(`https://www.reddit.com/r/worldwidecheck/new.json`);
     if (!response.ok) throw new Error('Network response was not ok');
-
     const data = await response.json();
     const posts = data.data.children || [];
     posts.length > 0 ? displayPosts(posts) : showNoDataMessage(postListElement)
   } catch (error) {
-    showErrorMessage(postListElement, 'Network error, please try again later.');
     console.error('Error fetching subreddit posts:', error);
   } finally {
     removeLoadingMsg();
@@ -88,7 +79,6 @@ async function fetchSubredditPosts() {
 async function displayPosts(posts) {
   const ulElement = createElement('ul', { className: 'ul__table', id: 'post_list', innerHTML: '' });
   const postnewData = posts;
-
   postnewData.forEach((post, index) => {
     const fURL = extractURLFromText(post.data.selftext);
     const cleanedSelftext = cleanSelftextWithURL(post.data.selftext);
@@ -98,7 +88,6 @@ async function displayPosts(posts) {
     const month = String(date.getMonth() + 1).padStart(2, '0');
     const year = String(date.getFullYear()).slice(-2);
     const formattedDate = `${day}/${month}/${year}`;
-
     const postData = {
       reportNumber: index + 1,
       title: post.data.title,
