@@ -1,7 +1,22 @@
 let tabUrl = null;
+let flaggedContent = null;
 chrome.runtime.sendMessage({ action: 'getCurrentTabId' }, (response) => {
   tabUrl = response.tabUrl
 });
+
+chrome.runtime.onMessage.addListener((request) => {
+  if (request.action === "openFlagModal") {
+    flaggedContent = { flags: request.flags, selectedText: request.selectedText };
+    test(request.flags, request.selectedText);
+  }
+});
+
+function test(flags, text) {
+  flags.forEach((flag) => {
+    console.log("FLAG: " + flag)
+  });
+  console.log("TEXT: " + text)
+}
 
 function createElement(tag, { className = '', textContent = '', id = '', href = '', target = '', } = {}) {
   const element = document.createElement(tag);
@@ -17,16 +32,30 @@ function createPostElement(postData, tabCount) {
   const liElement = createElement('li', { className: 'li__table' });
   const detailsElement = createElement('details', { name: 'details' });
   const summaryElement = createElement('summary');
+
+  const titleText = flaggedContent ? `${postData.title} - Flagged as: ${flaggedContent.selectedText}` : postData.title;
+
   const reportNumber = createElement('label', { id: 'id_report_data', textContent: `REPORT#${tabCount + 1}` });
   reportNumber.dataset.flair = postData.flair;
   reportNumber.style.setProperty('--clr-flair', postData.clr_flair);
   summaryElement.append(reportNumber, createElement('span', { textContent: '>' }));
+
   const hrElement = createElement('hr', { className: 'hr-status' });
   hrElement.setAttribute('data-hr_status', 'verified');
   const idReportDataElement = summaryElement.querySelector('#id_report_data');
   idReportDataElement.dataset.flair = postData.flair;
   let colorFlair = postData.clr_flair
   idReportDataElement.style.setProperty('--clr-flair', colorFlair);
+
+  // Add additional <li> with user-selected text, if available
+  if (flaggedContent) {
+    const userSelectionLi = createElement('li', {
+      className: 'user-selection',
+      textContent: `User Flagged Text: ${flaggedContent.selectedText}`
+    });
+    detailsElement.appendChild(userSelectionLi);
+  }
+
   detailsElement.append(
     summaryElement,
     createElement('p', { id: `id_report_title_${postData.post_id}`, textContent: postData.title }),

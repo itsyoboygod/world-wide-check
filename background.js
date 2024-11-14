@@ -101,13 +101,10 @@ chrome.runtime.onInstalled.addListener(() => {
   });
 });
 
-// Handle context menu click
 chrome.contextMenus.onClicked.addListener((info, tab) => {
   if (info.menuItemId === "flag-suspicious-paragraph") {
-    // Define preset flairs manually
-    const flairs = ["Misleading", "False", "Needs Verification", "Spam"];
+    const flairs = ["Reported", "Suspicious", "Misleading", "False", "Needs Verification", "Spam"];
 
-    // Send flairs to content script
     chrome.tabs.sendMessage(tab.id, {
       action: "openFlagModal",
       flags: flairs,

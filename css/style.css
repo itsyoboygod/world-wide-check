@@ -81,6 +81,10 @@
   font-family: monospace;
 }
 
+#blur-slider{
+  margin: 0 10px;
+}
+
 /* anonymously report functionality */
 
 #target-overlay{

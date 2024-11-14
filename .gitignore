@@ -1,0 +1,50 @@
+# Node modules
+node_modules/
+
+# Production build files
+build/
+dist/
+
+# Dependency directories
+# Optional: Ignore other directories for package managers like Yarn and pnpm
+.yarn/
+.pnp/
+.pnp.js
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Environment variables
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Cache directories and artifacts
+.cache/
+.parcel-cache/
+.next/
+.vscode/
+.idea/
+.DS_Store
+
+# Testing and coverage
+coverage/
+jest-html-reporters-*
+.nyc_output/
+
+# OS or IDE-specific files
+*.swp
+*.swo
+Thumbs.db
+.vscode/
+.idea/
+
+# Optional: Ignore any generated files for Docker, Firebase, or other platforms
+docker-compose.override.yml
+firebase-debug.log
