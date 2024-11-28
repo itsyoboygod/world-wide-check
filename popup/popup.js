@@ -1,39 +1,21 @@
 let tabUrl = null;
 let flaggedContent = null;
-chrome.runtime.sendMessage({ action: 'getCurrentTabId' }, (response) => {
-  tabUrl = response.tabUrl
-});
+chrome.runtime.sendMessage({ action: 'getCurrentTabId' }, (response) => { tabUrl = response.tabUrl });
 
-chrome.runtime.onMessage.addListener((request) => {
-  if (request.action === "openFlagModal") {
-    flaggedContent = { flags: request.flags, selectedText: request.selectedText };
-    test(request.flags, request.selectedText);
-  }
-});
-
-function test(flags, text) {
-  flags.forEach((flag) => {
-    console.log("FLAG: " + flag)
-  });
-  console.log("TEXT: " + text)
-}
-
-function createElement(tag, { className = '', textContent = '', id = '', href = '', target = '', } = {}) {
+function createElement(tag, attributes = {}) {
   const element = document.createElement(tag);
-  className ? element.classList.add(className) : ""
-  textContent ? element.textContent = textContent : ""
-  id ? element.id = id : ""
-  target ? element.target = target : ""
-  href ? element.href = href : ""
+  Object.assign(element, attributes);
   return element;
 }
+
+chrome.runtime.onMessage.addListener((request) => {
+  (request.action === "openFlagModal") ? flaggedContent = { flags: request.flags, selectedText: request.selectedText } : ""
+});
 
 function createPostElement(postData, tabCount) {
   const liElement = createElement('li', { className: 'li__table' });
   const detailsElement = createElement('details', { name: 'details' });
   const summaryElement = createElement('summary');
-
-  const titleText = flaggedContent ? `${postData.title} - Flagged as: ${flaggedContent.selectedText}` : postData.title;
 
   const reportNumber = createElement('label', { id: 'id_report_data', textContent: `REPORT#${tabCount + 1}` });
   reportNumber.dataset.flair = postData.flair;
@@ -47,7 +29,6 @@ function createPostElement(postData, tabCount) {
   let colorFlair = postData.clr_flair
   idReportDataElement.style.setProperty('--clr-flair', colorFlair);
 
-  // Add additional <li> with user-selected text, if available
   if (flaggedContent) {
     const userSelectionLi = createElement('li', {
       className: 'user-selection',
@@ -165,8 +146,6 @@ function extractURLFromText(text) {
   return matches && matches.length > 1 ? matches[1] : '';
 }
 
-function cleanSelftextWithURL(text) {
-  return text.replace(/fURL: \[(.*?)\]\((.*?)\)/, 'fURL: $2\n');
-}
+function cleanSelftextWithURL(text) { return text.replace(/fURL: \[(.*?)\]\((.*?)\)/, 'fURL: $2\n'); }
 
 fetchSubredditPosts();

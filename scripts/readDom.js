@@ -1,18 +1,6 @@
-function createElement(tag, { className = '', textContent = '', id = '', href = '', target = '', display = '', position = '', type = '', min = '', max = '', value = '', htmlFor = '' } = {}) {
+function createElement(tag, attributes = {}) {
     const element = document.createElement(tag);
-    className ? element.classList.add(className) : ""
-    textContent ? element.textContent = textContent : ""
-    id ? element.id = id : ""
-    target ? element.target = target : ""
-    href ? element.href = href : ""
-    display ? element.display = display : ""
-    position ? element.position = position : ""
-    type ? element.type = type : ""
-    min ? element.min = min : ""
-    max ? element.max = max : ""
-    value ? element.value = value : ""
-    htmlFor ? element.htmlFor = htmlFor : ""
-
+    Object.assign(element, attributes);
     return element;
 }
 
@@ -38,7 +26,7 @@ chrome.runtime.onMessage.addListener((request) => {
             const nodeText = currentNode.nodeValue.trim();
             if (nodeText.includes(matchingText)) {
                 const parts = nodeText.split(matchingText);
-                const span = createElement('span', { id: 'highlighted-text', textContent: `${matchingText}` });
+                const span = createElement('span', { id: 'highlighted-text', textContent: `${matchingText}`, });
                 span.dataset.flair = request.flair;
                 span.style.setProperty('--clr-flair', request.clrFlair);
                 const fragment = document.createDocumentFragment();
@@ -76,16 +64,9 @@ chrome.runtime.onMessage.addListener((request) => {
         }
     }
 
-    // GitHub personal access token (Replace with your own token - NOT recommended for production)
     const GITHUB_TOKEN = "";
-    // Helper function to create an element with attributes
-    function createElement(tag, attributes = {}) {
-        const element = document.createElement(tag);
-        Object.assign(element, attributes);
-        return element;
-    }
 
-    // Function to save a report as a Gist on GitHub
+
     async function saveReportToGist(url, selectedText, selectedFlair) {
         const report = {
             url,
@@ -116,13 +97,12 @@ chrome.runtime.onMessage.addListener((request) => {
 
             const data = await response.json();
             console.log("Report saved as Gist:", data.html_url);
-            return data.html_url; // Return the Gist URL
+            return data.html_url;
         } catch (error) {
             console.error("Error saving report to Gist:", error);
         }
     }
 
-    // Function to retrieve reports for a specific URL
     async function getReportsForUrl(url) {
         try {
             const response = await fetch("https://api.github.com/gists", {
@@ -140,20 +120,18 @@ chrome.runtime.onMessage.addListener((request) => {
                     const fileResponse = await fetch(gist.files["report.json"].raw_url);
                     const reportData = await fileResponse.json();
 
-                    // Check if the report URL matches the current page URL
                     if (reportData.url === url) {
                         reports.push(reportData);
                     }
                 }
             }
 
-            return reports; // Returns an array of matching reports
+            return reports;
         } catch (error) {
             console.error("Error retrieving reports from Gist:", error);
         }
     }
 
-    // Function to display existing reports for the current page URL
     async function displayExistingReports() {
         const pageUrl = window.location.href;
         const reports = await getReportsForUrl(pageUrl);
@@ -163,17 +141,13 @@ chrome.runtime.onMessage.addListener((request) => {
         });
     }
 
-    // Display reports when the content script loads
     displayExistingReports();
-
-    // Listen for messages from the background script
     chrome.runtime.onMessage.addListener((request) => {
         if (request.action === "openFlagModal") {
             openFlagModal(request.flags, request.selectedText);
         }
     });
 
-    // Function to open the modal for flair selection
     function openFlagModal(flags, selectedText) {
         if (document.getElementById("target-overlay")) return;
 
@@ -188,65 +162,53 @@ chrome.runtime.onMessage.addListener((request) => {
             flagSelect.appendChild(option);
         });
 
-        // Confirm button to save report and inject flair
         const confirmBtn = createElement("button", { textContent: "Confirm" });
         confirmBtn.onclick = async () => {
             const selectedFlair = flagSelect.value;
-
-            // Inject text with selected flair into DOM
             injectTargetTextIntoDOM(selectedText, selectedFlair);
-
-            // Save the report to GitHub Gist
             const pageUrl = window.location.href;
             await saveReportToGist(pageUrl, selectedText, selectedFlair);
-
-            // Remove the modal overlay
             document.body.removeChild(overlay);
+        };
+
+        const cancelBtn = createElement("button", { textContent: "Cancel" });
+        cancelBtn.onclick = () => {
+            document.body.removeChild(overlay); // Remove the overlay and modal
         };
 
         modal.appendChild(title);
         modal.appendChild(textParagraph);
         modal.appendChild(flagSelect);
         modal.appendChild(confirmBtn);
+        modal.appendChild(cancelBtn);
         overlay.appendChild(modal);
         document.body.appendChild(overlay);
     }
 
-    // Function to inject the target text with the specific selected flair into the user's DOM
     function injectTargetTextIntoDOM(selectedText, selectedFlair) {
         const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
         let node;
         while ((node = walker.nextNode())) {
             const parent = node.parentNode;
-
-            // Skip nodes that already contain highlighted or targeted text
             if (parent.closest("#highlighted-text") || parent.closest("#target-txt_selected")) { continue; }
-
             const nodeText = node.nodeValue.trim();
             if (nodeText.includes(selectedText)) {
                 const parts = nodeText.split(selectedText);
-
-                // Create a span for the selected target text with the specific flair
                 const targetSpan = createElement("span", {
                     id: "target-txt_selected",
                     textContent: selectedText,
                 });
-                targetSpan.dataset.flair = selectedFlair;  // Apply only the specific flair selected by the user
-                targetSpan.style.setProperty("--clr-flair", selectedFlair); // Optional styling
-
-                // Construct fragment with split text and span
+                targetSpan.dataset.flair = selectedFlair;
+                targetSpan.style.setProperty("--clr-flair", selectedFlair);
                 const fragment = document.createDocumentFragment();
                 if (parts[0]) fragment.appendChild(document.createTextNode(parts[0]));
                 fragment.appendChild(targetSpan);
                 if (parts[1]) fragment.appendChild(document.createTextNode(parts[1]));
-
-                // Replace the original node with the fragment
                 parent.replaceChild(fragment, node);
-                break; // Exit after first match
+                break;
             }
         }
     }
-
 });
 
 function handleBlurLevelChange(event) {
@@ -282,7 +244,6 @@ function injectBlurSlider() {
     });
 
     sliderContainer.addEventListener('mouseenter', () => { clearTimeout(hideTimeout); });
-
     document.body.addEventListener('mouseout', (event) => {
         const relatedTarget = event.relatedTarget;
         const highlightedText = event.target.closest('#highlighted-text[data-flair="NSFW🔞"]');

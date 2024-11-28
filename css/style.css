@@ -3,6 +3,7 @@
   --clr-flair: --clr-flair;
   --clr-bckg-hr-grdnt: linear-gradient(to right, transparent, var(--rdm-clr), transparent);
   --tomato: hsla(9, 100%, 64%, 0.99);
+  --lightskyblue: lightskyblue;
   --blur-amount: blur(10px);
   --tst-time: .250s;
 }
@@ -81,39 +82,48 @@
   font-family: monospace;
 }
 
-#blur-slider{
+#blur-slider {
   margin: 0 10px;
 }
 
 /* anonymously report functionality */
 
-#target-overlay{
+#target-overlay {
   position: fixed;
   top: 0;
   left: 0;
   min-height: 100vh;
   min-width: 100vw;
+  margin: 0;
+  padding: 0;
   backdrop-filter: blur(2px);
   background: transparent;
   background-color: hsla(0, 0%, 0%, .5);
-  z-index: 999999;  
+  z-index: 999999;
 }
 
-#target-modal{
+#target-modal {
+  display: grid;
+  gap: .5rem;
   overflow-y: scroll;
   position: fixed;
   width: 300px;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  padding: 20px;
+  padding: 1rem;
   height: fit-content;
   max-height: 500px;
-  background-color:#fff;
-  border-radius: 1rem; 
+  background-color: #fff;
+  border-radius: 1rem;
 }
 
-#target-txt_selected{
+#target-modal h3{
+  margin: .5rem 0;
+}
+
+#target-txt_selected {
+  margin: 1rem 0;
   position: relative;
   width: 100%;
   outline: solid 0.1rem var(--tomato);
@@ -121,7 +131,7 @@
   outline-offset: .1rem;
 }
 
-#target-txt_selected::after{
+#target-txt_selected::after {
   content: attr(data-flair);
   background-color: var(--tomato);
   text-shadow: 0 0 5px black;
@@ -148,8 +158,38 @@
   font-family: monospace;
 }
 
-#target-select-input{
-  width: 100%;
+#target-select-input {
+  width: auto;
+  padding: 8px 12px;
+  border: .1px solid;
+  border-radius: 4px;
+  background-color: white;
+  color: #333;
+  font-size: 16px;
+  cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  background-image: url('data:image/svg+xml;charset=UTF-8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 4 5"><path fill="gray" d="M2 0L0 2h4z"/></svg>');
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  background-size: 10px;
+}
+
+#target-select-input:focus {
+  border-color: #007BFF;
+  outline: none;
+  box-shadow: 0 0 3px rgba(0, 123, 255, 0.5);
+}
+
+#target-modal button {
+  padding: .5rem;
+  border: none;
+  border-radius: .2rem;
+}
+
+#target-modal button {
+  background-color: var(--tomato);
 }
 
 ::-webkit-scrollbar {

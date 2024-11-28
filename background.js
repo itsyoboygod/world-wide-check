@@ -88,6 +88,11 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     });
   }
   badgeTextValues = {}
+
+  if (request.action === 'openExtension') {
+    chrome.tabs.create({ url: chrome.runtime.getURL('popup/popup.html') });
+    sendResponse({ success: true, message: 'Extension opened in a new tab.' });
+}
 });
 
 chrome.runtime.onInstalled.addListener(() => {

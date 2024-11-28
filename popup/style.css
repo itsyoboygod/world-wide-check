@@ -149,7 +149,7 @@ body {
   border-radius: 0.5rem 0.5rem 0 0;
   border: 1px solid var(--clr-border-label);
   border-bottom: none;
-  background-image: linear-gradient(var(--clr-bkg-grdnt-label), #fff);
+  background-image: linear-gradient(var(--clr-bkg-grdnt-label), var(--clr-body-bg));
   translate: calc(var(--active) * 100%);
   transition: translate 0.5s ease-in-out;
 }
@@ -221,6 +221,7 @@ label[for="tab1"]::after {
   display: flex;
   height: 2.5rem;
   border-bottom: 1px solid #e9ebec;
+  overflow: hidden;
 }
 
 .sub-tabs input {
@@ -264,6 +265,7 @@ label[for="tab1"]::after {
   background-image: linear-gradient(to top, var(--clr-underline-sub-tab), transparent 10px);
   translate: calc(var(--sub-active) * 100%);
   transition: translate 0.5s ease-in-out;
+  filter: blur(2px);
 }
 
 .sub-tabs:has(:checked:nth-of-type(1)) {
