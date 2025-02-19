@@ -1,0 +1,34 @@
+name: Deploy Chrome Extension Config
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Create config.js dynamically
+        run: |
+          echo "const CONFIG = {" > config.js
+          echo "  GITHUB_TOKEN: '${{ secrets.GITHUB_TOKEN }}'" >> config.js
+          echo "};" >> config.js
+
+      - name: Upload artifact for deployment
+        uses: actions/upload-artifact@v4  # ✅ Updated from v3 to v4
+        with:
+          name: chrome-extension-config
+          path: ./
+
+      - name: Deploy to GitHub Pages
+        uses: actions/deploy-pages@v2
