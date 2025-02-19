@@ -25,10 +25,12 @@ jobs:
           echo "};" >> config.js
 
       - name: Upload artifact for deployment
-        uses: actions/upload-artifact@v4  # ✅ Updated from v3 to v4
+        uses: actions/upload-pages-artifact@v2  # ✅ Uploads artifact for GitHub Pages
         with:
-          name: chrome-extension-config
           path: ./
+          name: github-pages  # ✅ This must match the name expected in deploy step
 
       - name: Deploy to GitHub Pages
         uses: actions/deploy-pages@v2
+        with:
+          artifact_name: github-pages  # ✅ This must match the uploaded artifact name
