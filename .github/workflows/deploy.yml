@@ -24,11 +24,14 @@ jobs:
           echo "  GIST_TOKEN: '${{ secrets.GIST_TOKEN }}'" >> config.js
           echo "};" >> config.js
 
-      # ✅ Correct Upload Method for GitHub Pages
+      # ✅ Upload using actions/upload-artifact@v4 instead of upload-pages-artifact@v2
       - name: Upload artifact for deployment
-        uses: actions/upload-pages-artifact@v2  # ✅ Correct for GitHub Pages
+        uses: actions/upload-artifact@v4  # ✅ Updated to v4
         with:
+          name: github-pages
           path: ./
 
       - name: Deploy to GitHub Pages
         uses: actions/deploy-pages@v2
+        with:
+          artifact_name: github-pages  # ✅ Ensure correct artifact name
