@@ -25,12 +25,12 @@ jobs:
           echo "};" >> config.js
 
       - name: Upload artifact for deployment
-        uses: actions/upload-pages-artifact@v2  # ✅ Uploads artifact for GitHub Pages
+        uses: actions/upload-artifact@v4  # ✅ Upgraded to v4
         with:
+          name: github-pages
           path: ./
-          name: github-pages  # ✅ This must match the name expected in deploy step
 
       - name: Deploy to GitHub Pages
         uses: actions/deploy-pages@v2
         with:
-          artifact_name: github-pages  # ✅ This must match the uploaded artifact name
+          artifact_name: github-pages  # ✅ Ensure correct artifact name
