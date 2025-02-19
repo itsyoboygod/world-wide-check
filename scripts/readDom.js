@@ -200,43 +200,68 @@ chrome.runtime.onMessage.addListener((request) => {
         }
     }
 
-    const GIST_TOKEN = "";
+    let GIST_TOKEN = "";
 
-    async function saveReportToGist(url, selectedText, selectedFlair) {
-        const report = {
-            url,
-            selectedText,
-            selectedFlair,
-            timestamp: new Date().toISOString()
-        };
 
-        const gistData = {
-            "description": "Anonymous report",
-            "public": true,
-            "files": {
-                "report.json": {
-                    "content": JSON.stringify(report, null, 2)
-                }
-            }
-        };
+// ✅ Fetch GITHUB_TOKEN securely from config.js
+fetch(chrome.runtime.getURL("config.js"))
+.then(response => response.ok ? response.text() : Promise.reject("Config not found"))
+.then(script => {
+    const configScript = document.createElement("script");
+    configScript.textContent = script;
+    document.head.appendChild(configScript);
 
-        try {
-            const response = await fetch("https://api.github.com/gists", {
-                method: "POST",
-                headers: {
-                    "Authorization": `token ${GIST_TOKEN}`,
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify(gistData)
-            });
-
-            const data = await response.json();
-            console.log("Report saved as Gist:", data.html_url);
-            return data.html_url;
-        } catch (error) {
-            console.error("Error saving report to Gist:", error);
-        }
+    // Set GITHUB_TOKEN
+    if (typeof CONFIG !== "undefined") {
+        GITHUB_TOKEN = CONFIG.GITHUB_TOKEN;
+        console.log("✅ GITHUB_TOKEN loaded successfully");
+    } else {
+        console.error("❌ CONFIG object is not defined in config.js");
     }
+})
+.catch(error => console.warn("⚠️ Could not load config.js:", error));
+
+
+async function saveReportToGist(url, selectedText, selectedFlair) {
+    if (!GITHUB_TOKEN) {
+        console.error("❌ GITHUB_TOKEN is not available");
+        return;
+    }
+
+    const report = {
+        url,
+        selectedText,
+        selectedFlair,
+        timestamp: new Date().toISOString()
+    };
+
+    const gistData = {
+        "description": "Anonymous report",
+        "public": true,
+        "files": {
+            "report.json": {
+                "content": JSON.stringify(report, null, 2)
+            }
+        }
+    };
+
+    try {
+        const response = await fetch("https://api.github.com/gists", {
+            method: "POST",
+            headers: {
+                "Authorization": `token ${GITHUB_TOKEN}`,
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(gistData)
+        });
+
+        const data = await response.json();
+        console.log("✅ Report saved as Gist:", data.html_url);
+        return data.html_url;
+    } catch (error) {
+        console.error("❌ Error saving report to Gist:", error);
+    }
+}
 
     async function getReportsForUrl(url) {
         try {
