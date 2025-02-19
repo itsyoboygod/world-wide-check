@@ -202,8 +202,7 @@ chrome.runtime.onMessage.addListener((request) => {
 
     let GIST_TOKEN = "";
 
-
-// ✅ Fetch GITHUB_TOKEN securely from config.js
+// ✅ Fetch GIST_TOKEN securely from config.js
 fetch(chrome.runtime.getURL("config.js"))
 .then(response => response.ok ? response.text() : Promise.reject("Config not found"))
 .then(script => {
@@ -211,10 +210,10 @@ fetch(chrome.runtime.getURL("config.js"))
     configScript.textContent = script;
     document.head.appendChild(configScript);
 
-    // Set GITHUB_TOKEN
+    // Set GIST_TOKEN
     if (typeof CONFIG !== "undefined") {
-        GITHUB_TOKEN = CONFIG.GITHUB_TOKEN;
-        console.log("✅ GITHUB_TOKEN loaded successfully");
+        GIST_TOKEN = CONFIG.GIST_TOKEN;
+        console.log("✅ GIST_TOKEN loaded successfully");
     } else {
         console.error("❌ CONFIG object is not defined in config.js");
     }
@@ -223,8 +222,8 @@ fetch(chrome.runtime.getURL("config.js"))
 
 
 async function saveReportToGist(url, selectedText, selectedFlair) {
-    if (!GITHUB_TOKEN) {
-        console.error("❌ GITHUB_TOKEN is not available");
+    if (!GIST_TOKEN) {
+        console.error("❌ GIST_TOKEN is not available");
         return;
     }
 
@@ -249,7 +248,7 @@ async function saveReportToGist(url, selectedText, selectedFlair) {
         const response = await fetch("https://api.github.com/gists", {
             method: "POST",
             headers: {
-                "Authorization": `token ${GITHUB_TOKEN}`,
+                "Authorization": `token ${GIST_TOKEN}`,
                 "Content-Type": "application/json"
             },
             body: JSON.stringify(gistData)
