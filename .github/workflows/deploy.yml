@@ -25,7 +25,7 @@ jobs:
           echo "};" >> config.js
 
       - name: Upload artifact for deployment
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-pages-artifact@v2.0.0
         with:
           name: pages-artifact  # ✅ Make sure this matches below
           path: ./
