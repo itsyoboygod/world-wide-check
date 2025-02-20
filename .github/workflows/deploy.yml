@@ -4,7 +4,6 @@ on:
   push:
     branches:
       - main
-  workflow_dispatch:
 
 permissions:
   contents: read
@@ -24,14 +23,16 @@ jobs:
           echo "  GIST_TOKEN: '${{ secrets.GIST_TOKEN }}'" >> config.js
           echo "};" >> config.js
 
-      # ✅ Upload using actions/upload-artifact@v4 instead of upload-pages-artifact@v2
       - name: Upload artifact for deployment
-        uses: actions/upload-artifact@v4  # ✅ Updated to v4
+        uses: actions/upload-artifact@v4
         with:
-          name: github-pages
+          name: pages-artifact  # ✅ Make sure this matches below
           path: ./
+
+      - name: Debug: List uploaded artifacts
+        run: ls -R  # ✅ Print directory structure to check files
 
       - name: Deploy to GitHub Pages
         uses: actions/deploy-pages@v2
         with:
-          artifact_name: github-pages  # ✅ Ensure correct artifact name
+          artifact_name: pages-artifact  # ✅ Match this with upload name

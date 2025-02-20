@@ -106,8 +106,6 @@ function openFlagModal(flags, selectedText) {
     document.body.appendChild(overlay);
 }
 
-
-
 function readDom() {
     const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
     const nodes = [];
@@ -146,11 +144,11 @@ chrome.runtime.onMessage.addListener((request) => {
     }
 
     // Modify the message listener to use openFlagModal
-chrome.runtime.onMessage.addListener((request) => {
-    if (request.action === "openFlagModal") {
-        openFlagModal(request.flags, request.selectedText);
-    }
-});
+    chrome.runtime.onMessage.addListener((request) => {
+        if (request.action === "openFlagModal") {
+            openFlagModal(request.flags, request.selectedText);
+        }
+    });
 
     if (request.action === 'matchingTitleSelected') {
         const matchingText = request.payload;
@@ -202,65 +200,65 @@ chrome.runtime.onMessage.addListener((request) => {
 
     let GIST_TOKEN = "";
 
-// ✅ Fetch GIST_TOKEN securely from config.js
-fetch(chrome.runtime.getURL("config.js"))
-.then(response => response.ok ? response.text() : Promise.reject("Config not found"))
-.then(script => {
-    const configScript = document.createElement("script");
-    configScript.textContent = script;
-    document.head.appendChild(configScript);
+    // ✅ Fetch GIST_TOKEN securely from config.js
+    fetch(chrome.runtime.getURL("config.js"))
+        .then(response => response.ok ? response.text() : Promise.reject("Config not found"))
+        .then(script => {
+            const configScript = document.createElement("script");
+            configScript.textContent = script;
+            document.head.appendChild(configScript);
 
-    // Set GIST_TOKEN
-    if (typeof CONFIG !== "undefined") {
-        GIST_TOKEN = CONFIG.GIST_TOKEN;
-        console.log("✅ GIST_TOKEN loaded successfully");
-    } else {
-        console.error("❌ CONFIG object is not defined in config.js");
-    }
-})
-.catch(error => console.warn("⚠️ Could not load config.js:", error));
-
-
-async function saveReportToGist(url, selectedText, selectedFlair) {
-    if (!GIST_TOKEN) {
-        console.error("❌ GIST_TOKEN is not available");
-        return;
-    }
-
-    const report = {
-        url,
-        selectedText,
-        selectedFlair,
-        timestamp: new Date().toISOString()
-    };
-
-    const gistData = {
-        "description": "Anonymous report",
-        "public": true,
-        "files": {
-            "report.json": {
-                "content": JSON.stringify(report, null, 2)
+            // Set GIST_TOKEN
+            if (typeof CONFIG !== "undefined") {
+                GIST_TOKEN = CONFIG.GIST_TOKEN;
+                console.log("✅ GIST_TOKEN loaded successfully");
+            } else {
+                console.error("❌ CONFIG object is not defined in config.js");
             }
+        })
+        .catch(error => console.warn("⚠️ Could not load config.js:", error));
+
+
+    async function saveReportToGist(url, selectedText, selectedFlair) {
+        if (!GIST_TOKEN) {
+            console.error("❌ GIST_TOKEN is not available");
+            return;
         }
-    };
 
-    try {
-        const response = await fetch("https://api.github.com/gists", {
-            method: "POST",
-            headers: {
-                "Authorization": `token ${GIST_TOKEN}`,
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify(gistData)
-        });
+        const report = {
+            url,
+            selectedText,
+            selectedFlair,
+            timestamp: new Date().toISOString()
+        };
 
-        const data = await response.json();
-        console.log("✅ Report saved as Gist:", data.html_url);
-        return data.html_url;
-    } catch (error) {
-        console.error("❌ Error saving report to Gist:", error);
+        const gistData = {
+            "description": "Anonymous report",
+            "public": true,
+            "files": {
+                "report.json": {
+                    "content": JSON.stringify(report, null, 2)
+                }
+            }
+        };
+
+        try {
+            const response = await fetch("https://api.github.com/gists", {
+                method: "POST",
+                headers: {
+                    "Authorization": `token ${GIST_TOKEN}`,
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(gistData)
+            });
+
+            const data = await response.json();
+            console.log("✅ Report saved as Gist:", data.html_url);
+            return data.html_url;
+        } catch (error) {
+            console.error("❌ Error saving report to Gist:", error);
+        }
     }
-}
 
     async function getReportsForUrl(url) {
         try {
@@ -270,24 +268,40 @@ async function saveReportToGist(url, selectedText, selectedFlair) {
                     "Authorization": `token ${GIST_TOKEN}`
                 }
             });
-
+    
+            if (!response.ok) {
+                throw new Error(`GitHub API responded with ${response.status}`);
+            }
+    
             const gists = await response.json();
+    
+            if (!Array.isArray(gists)) {
+                console.error("Unexpected response from GitHub API:", gists);
+                return [];
+            }
+    
             const reports = [];
-
+    
             for (const gist of gists) {
-                if (gist.files["report.json"]) {
-                    const fileResponse = await fetch(gist.files["report.json"].raw_url);
-                    const reportData = await fileResponse.json();
-
-                    if (reportData.url === url) {
-                        reports.push(reportData);
+                if (gist.files && gist.files["report.json"]) {
+                    try {
+                        const fileResponse = await fetch(gist.files["report.json"].raw_url);
+                        if (!fileResponse.ok) continue; // Skip if failed
+    
+                        const reportData = await fileResponse.json();
+                        if (reportData.url === url) {
+                            reports.push(reportData);
+                        }
+                    } catch (fileError) {
+                        console.warn("Failed to fetch report file:", fileError);
                     }
                 }
             }
-
+    
             return reports;
         } catch (error) {
             console.error("Error retrieving reports from Gist:", error);
+            return [];
         }
     }
 
@@ -309,7 +323,7 @@ async function saveReportToGist(url, selectedText, selectedFlair) {
 
     function openFlagModal(flags, selectedText) {
         if (document.getElementById("target-overlay")) return;
-    
+
         // Create overlay
         const overlay = document.createElement("div");
         overlay.id = "target-overlay";
@@ -318,7 +332,7 @@ async function saveReportToGist(url, selectedText, selectedFlair) {
             background: rgba(0,0,0,0.5); display: flex; justify-content: center;
             align-items: center; z-index: 10000;
         `;
-    
+
         // Create the modal
         const modal = document.createElement("div");
         modal.id = "target-modal";
@@ -326,14 +340,14 @@ async function saveReportToGist(url, selectedText, selectedFlair) {
             background: white; padding: 1rem; border-radius: 5px; text-align: center;
             box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
         `;
-    
+
         // Title and selected text preview
         const title = document.createElement("h3");
         title.textContent = "Flag this paragraph";
         const textParagraph = document.createElement("p");
         textParagraph.id = "target-txt_selected";
         textParagraph.textContent = selectedText;
-    
+
         // Dropdown to select flag reason
         const flagSelect = document.createElement("select");
         flagSelect.id = "target-select-input";
@@ -343,24 +357,24 @@ async function saveReportToGist(url, selectedText, selectedFlair) {
             option.textContent = flag;
             flagSelect.appendChild(option);
         });
-    
+
         // Confirm button (disabled until reCAPTCHA is solved)
         const confirmBtn = document.createElement("button");
         confirmBtn.textContent = "Submit Report";
         confirmBtn.disabled = true;
         confirmBtn.style.cssText = "margin-top: 1rem; padding: 5px 10px; cursor: pointer;";
-    
+
         // Cancel button
         const cancelBtn = document.createElement("button");
         cancelBtn.textContent = "Cancel";
         cancelBtn.style.cssText = "margin-left: 10px; padding: 5px 10px; cursor: pointer;";
         cancelBtn.onclick = () => document.body.removeChild(overlay);
-    
+
         // Function to open reCAPTCHA popup
         function openRecaptchaPopup() {
             const recaptchaUrl = "https://itsyoboygod.github.io/recaptcha-page/";
             const popup = window.open(recaptchaUrl, "reCAPTCHA", "width=500,height=600");
-    
+
             // Listen for reCAPTCHA verification success from the popup
             window.addEventListener("message", function (event) {
                 if (event.origin === "https://itsyoboygod.github.io") {
@@ -373,13 +387,13 @@ async function saveReportToGist(url, selectedText, selectedFlair) {
                 }
             });
         }
-    
+
         // Open reCAPTCHA popup when clicking the button
         const recaptchaBtn = document.createElement("button");
         recaptchaBtn.textContent = "Verify reCAPTCHA";
         recaptchaBtn.style.cssText = "margin-top: 1rem; padding: 5px 10px; cursor: pointer;";
         recaptchaBtn.onclick = openRecaptchaPopup;
-    
+
         // Submit button action (only works if reCAPTCHA was verified)
         confirmBtn.onclick = async () => {
             if (!confirmBtn.disabled) {
@@ -392,7 +406,7 @@ async function saveReportToGist(url, selectedText, selectedFlair) {
                 alert("You must complete reCAPTCHA before submitting!");
             }
         };
-    
+
         // Append elements to modal
         modal.appendChild(title);
         modal.appendChild(textParagraph);
@@ -403,7 +417,7 @@ async function saveReportToGist(url, selectedText, selectedFlair) {
         overlay.appendChild(modal);
         document.body.appendChild(overlay);
     }
-    
+
 });
 
 function handleBlurLevelChange(event) {
