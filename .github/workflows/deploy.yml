@@ -11,7 +11,7 @@ permissions:
   id-token: write
 
 jobs:
-  deploy:
+  build:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -24,15 +24,13 @@ jobs:
           echo "};" >> config.js
 
       - name: Upload artifact for deployment
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-pages-artifact@v3
         with:
-          name: pages-artifact  # ✅ Make sure this matches below
           path: ./
 
-      - name: Debug: List uploaded artifacts
-        run: ls -R  # ✅ Print directory structure to check files
-
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
       - name: Deploy to GitHub Pages
-        uses: actions/deploy-pages@v2
-        with:
-          artifact_name: pages-artifact  # ✅ Match this with upload name
+        uses: actions/deploy-pages@v4
