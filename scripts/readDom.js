@@ -200,16 +200,20 @@ chrome.runtime.onMessage.addListener((request) => {
 
     let GIST_TOKEN = "";
 
-// ✅ Fetch GIST_TOKEN securely from config.js
+// ✅ Fetch GIST_TOKEN securely from config.js INSIDE the extension
 fetch(chrome.runtime.getURL("config.js"))
     .then(response => response.text())
     .then(script => {
-        const config = new Function(script + "; return CONFIG;")(); // Execute safely
-        if (config.GIST_TOKEN) {
-            GIST_TOKEN = config.GIST_TOKEN;
-            console.log("✅ GIST_TOKEN loaded successfully");
-        } else {
-            console.error("❌ CONFIG object is missing GIST_TOKEN");
+        try {
+            const config = new Function(script + "; return CONFIG;")(); // Execute script safely
+            if (config.GIST_TOKEN) {
+                GIST_TOKEN = config.GIST_TOKEN;
+                console.log("✅ GIST_TOKEN loaded successfully");
+            } else {
+                console.error("❌ CONFIG object is missing GIST_TOKEN");
+            }
+        } catch (error) {
+            console.error("❌ Failed to parse config.js:", error);
         }
     })
     .catch(error => console.warn("⚠️ Could not load config.js:", error));

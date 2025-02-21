@@ -19,9 +19,9 @@ jobs:
 
       - name: Create config.js dynamically
         run: |
-          echo "const CONFIG = {" > config.js
-          echo "  GIST_TOKEN: '${{ secrets.GIST_TOKEN }}'" >> config.js
-          echo "};" >> config.js
+          echo "const CONFIG = {" > extension/config.js
+          echo "  GIST_TOKEN: '${{ secrets.GIST_TOKEN }}'" >> extension/config.js
+          echo "};" >> extension/config.js
 
       - name: Ensure config.js exists
         run: ls -l config.js && cat config.js  # ✅ Debugging step
