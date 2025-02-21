@@ -23,6 +23,9 @@ jobs:
           echo "  GIST_TOKEN: '${{ secrets.GIST_TOKEN }}'" >> config.js
           echo "};" >> config.js
 
+      - name: Ensure config.js is created
+        run: cat config.js  # ✅ Debugging step to confirm file exists
+
       - name: Upload artifact for deployment
         uses: actions/upload-pages-artifact@v3
         with:
