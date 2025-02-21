@@ -200,70 +200,46 @@ chrome.runtime.onMessage.addListener((request) => {
 
     let GIST_TOKEN = "";
 
-    // ✅ Fetch GIST_TOKEN securely from config.js
-    fetch(chrome.runtime.getURL("config.js"))
-    .then(response => {
-        if (!response.ok) {
-            throw new Error(`HTTP error! Status: ${response.status}`);
-        }
-        return response.text();
-    })
+// ✅ Fetch GIST_TOKEN securely from config.js
+fetch(chrome.runtime.getURL("config.js"))
+    .then(response => response.text())
     .then(script => {
-        console.log("✅ Successfully loaded config.js");
-        const configScript = document.createElement("script");
-        configScript.textContent = script;
-        document.head.appendChild(configScript);
-
-        // Set GIST_TOKEN
-        if (typeof CONFIG !== "undefined") {
-            GIST_TOKEN = CONFIG.GIST_TOKEN;
-            console.log("✅ GIST_TOKEN loaded:", GIST_TOKEN);
+        const config = new Function(script + "; return CONFIG;")(); // Execute safely
+        if (config.GIST_TOKEN) {
+            GIST_TOKEN = config.GIST_TOKEN;
+            console.log("✅ GIST_TOKEN loaded successfully");
         } else {
-            console.error("❌ CONFIG object is not defined in config.js");
+            console.error("❌ CONFIG object is missing GIST_TOKEN");
         }
     })
-    .catch(error => console.error("⚠️ Could not load config.js:", error));
+    .catch(error => console.warn("⚠️ Could not load config.js:", error));
 
-    async function saveReportToGist(url, selectedText, selectedFlair) {
-        if (!GIST_TOKEN) {
-            console.error("❌ GIST_TOKEN is not available");
-            return;
-        }
-
-        const report = {
-            url,
-            selectedText,
-            selectedFlair,
-            timestamp: new Date().toISOString()
-        };
-
-        const gistData = {
-            "description": "Anonymous report",
-            "public": true,
-            "files": {
-                "report.json": {
-                    "content": JSON.stringify(report, null, 2)
-                }
-            }
-        };
-
-        try {
-            const response = await fetch("https://api.github.com/gists", {
-                method: "POST",
-                headers: {
-                    "Authorization": `token ${GIST_TOKEN}`,
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify(gistData)
-            });
-
-            const data = await response.json();
-            console.log("✅ Report saved as Gist:", data.html_url);
-            return data.html_url;
-        } catch (error) {
-            console.error("❌ Error saving report to Gist:", error);
-        }
+// Example usage when calling GitHub API
+async function getReportsForUrl(url) {
+    if (!GIST_TOKEN) {
+        console.error("❌ GIST_TOKEN is not available");
+        return;
     }
+
+    try {
+        const response = await fetch("https://api.github.com/gists", {
+            method: "GET",
+            headers: {
+                "Authorization": `token ${GIST_TOKEN}`
+            }
+        });
+
+        if (!response.ok) {
+            throw new Error(`GitHub API responded with ${response.status}`);
+        }
+
+        const gists = await response.json();
+        console.log("✅ Gists retrieved:", gists);
+        return gists;
+    } catch (error) {
+        console.error("❌ Error retrieving reports from Gist:", error);
+    }
+}
 
     async function getReportsForUrl(url) {
         try {
