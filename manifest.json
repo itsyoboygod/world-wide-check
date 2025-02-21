@@ -23,7 +23,7 @@
   ],
   "action": {
     "default_popup": "/popup/popup.html",
-    "deafult_title": "World Wide Check"
+    "default_title": "World Wide Check"
   },
   "background": {
     "service_worker": "background.js",
@@ -56,6 +56,6 @@
     }
   ],
   "content_security_policy": {
-    "extension_pages": "script-src 'self'; object-src 'none'; frame-src https://www.google.com/recaptcha/ https://recaptcha.html"
+    "extension_pages": "script-src 'self'; object-src 'none'; frame-src 'self' https://www.google.com/recaptcha/ https://www.gstatic.com/recaptcha/"
   }
 }

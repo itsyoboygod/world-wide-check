@@ -202,22 +202,27 @@ chrome.runtime.onMessage.addListener((request) => {
 
     // ✅ Fetch GIST_TOKEN securely from config.js
     fetch(chrome.runtime.getURL("config.js"))
-        .then(response => response.ok ? response.text() : Promise.reject("Config not found"))
-        .then(script => {
-            const configScript = document.createElement("script");
-            configScript.textContent = script;
-            document.head.appendChild(configScript);
+    .then(response => {
+        if (!response.ok) {
+            throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+        return response.text();
+    })
+    .then(script => {
+        console.log("✅ Successfully loaded config.js");
+        const configScript = document.createElement("script");
+        configScript.textContent = script;
+        document.head.appendChild(configScript);
 
-            // Set GIST_TOKEN
-            if (typeof CONFIG !== "undefined") {
-                GIST_TOKEN = CONFIG.GIST_TOKEN;
-                console.log("✅ GIST_TOKEN loaded successfully");
-            } else {
-                console.error("❌ CONFIG object is not defined in config.js");
-            }
-        })
-        .catch(error => console.warn("⚠️ Could not load config.js:", error));
-
+        // Set GIST_TOKEN
+        if (typeof CONFIG !== "undefined") {
+            GIST_TOKEN = CONFIG.GIST_TOKEN;
+            console.log("✅ GIST_TOKEN loaded:", GIST_TOKEN);
+        } else {
+            console.error("❌ CONFIG object is not defined in config.js");
+        }
+    })
+    .catch(error => console.error("⚠️ Could not load config.js:", error));
 
     async function saveReportToGist(url, selectedText, selectedFlair) {
         if (!GIST_TOKEN) {
