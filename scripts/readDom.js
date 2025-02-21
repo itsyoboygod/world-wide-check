@@ -200,50 +200,46 @@ chrome.runtime.onMessage.addListener((request) => {
 
     let GIST_TOKEN = "";
 
-// ✅ Fetch GIST_TOKEN securely from config.js INSIDE the extension
-fetch(chrome.runtime.getURL("config.js"))
-    .then(response => response.text())
-    .then(script => {
-        try {
-            const config = new Function(script + "; return CONFIG;")(); // Execute script safely
+    // ✅ Fetch GIST_TOKEN securely from config.js
+    fetch(chrome.runtime.getURL("config.js"))
+        .then(response => response.text())
+        .then(script => {
+            const config = new Function(script + "; return CONFIG;")(); // Execute safely
             if (config.GIST_TOKEN) {
                 GIST_TOKEN = config.GIST_TOKEN;
                 console.log("✅ GIST_TOKEN loaded successfully");
             } else {
                 console.error("❌ CONFIG object is missing GIST_TOKEN");
             }
-        } catch (error) {
-            console.error("❌ Failed to parse config.js:", error);
+        })
+        .catch(error => console.warn("⚠️ Could not load config.js:", error));
+    
+    // Example usage when calling GitHub API
+    async function getReportsForUrl(url) {
+        if (!GIST_TOKEN) {
+            console.error("❌ GIST_TOKEN is not available");
+            return;
         }
-    })
-    .catch(error => console.warn("⚠️ Could not load config.js:", error));
-
-// Example usage when calling GitHub API
-async function getReportsForUrl(url) {
-    if (!GIST_TOKEN) {
-        console.error("❌ GIST_TOKEN is not available");
-        return;
-    }
-
-    try {
-        const response = await fetch("https://api.github.com/gists", {
-            method: "GET",
-            headers: {
-                "Authorization": `token ${GIST_TOKEN}`
+    
+        try {
+            const response = await fetch("https://api.github.com/gists", {
+                method: "GET",
+                headers: {
+                    "Authorization": `token ${GIST_TOKEN}`
+                }
+            });
+    
+            if (!response.ok) {
+                throw new Error(`GitHub API responded with ${response.status}`);
             }
-        });
-
-        if (!response.ok) {
-            throw new Error(`GitHub API responded with ${response.status}`);
+    
+            const gists = await response.json();
+            console.log("✅ Gists retrieved:", gists);
+            return gists;
+        } catch (error) {
+            console.error("❌ Error retrieving reports from Gist:", error);
         }
-
-        const gists = await response.json();
-        console.log("✅ Gists retrieved:", gists);
-        return gists;
-    } catch (error) {
-        console.error("❌ Error retrieving reports from Gist:", error);
     }
-}
 
     async function getReportsForUrl(url) {
         try {
