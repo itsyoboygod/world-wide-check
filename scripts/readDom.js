@@ -200,90 +200,77 @@ chrome.runtime.onMessage.addListener((request) => {
 
     let GIST_TOKEN = "";
 
-    // ✅ Fetch GIST_TOKEN securely from config.js
-    fetch(chrome.runtime.getURL("config.js"))
-        .then(response => response.text())
-        .then(script => {
-            const config = new Function(script + "; return CONFIG;")(); // Execute safely
+// ✅ Fetch GIST_TOKEN securely from config.js INSIDE the extension
+fetch(chrome.runtime.getURL("config.js"))
+    .then(response => response.text())
+    .then(script => {
+        try {
+            const config = new Function(script + "; return CONFIG;")(); // Execute script safely
             if (config.GIST_TOKEN) {
                 GIST_TOKEN = config.GIST_TOKEN;
                 console.log("✅ GIST_TOKEN loaded successfully");
             } else {
                 console.error("❌ CONFIG object is missing GIST_TOKEN");
             }
-        })
-        .catch(error => console.warn("⚠️ Could not load config.js:", error));
-    
-    // Example usage when calling GitHub API
-    async function getReportsForUrl(url) {
-        if (!GIST_TOKEN) {
-            console.error("❌ GIST_TOKEN is not available");
-            return;
-        }
-    
-        try {
-            const response = await fetch("https://api.github.com/gists", {
-                method: "GET",
-                headers: {
-                    "Authorization": `token ${GIST_TOKEN}`
-                }
-            });
-    
-            if (!response.ok) {
-                throw new Error(`GitHub API responded with ${response.status}`);
-            }
-    
-            const gists = await response.json();
-            console.log("✅ Gists retrieved:", gists);
-            return gists;
         } catch (error) {
-            console.error("❌ Error retrieving reports from Gist:", error);
+            console.error("❌ Failed to parse config.js:", error);
         }
-    }
+    })
+    .catch(error => console.warn("⚠️ Could not load config.js:", error));
 
+    
     async function getReportsForUrl(url) {
-        try {
-            const response = await fetch("https://api.github.com/gists", {
-                method: "GET",
-                headers: {
-                    "Authorization": `token ${GIST_TOKEN}`
-                }
-            });
+        console.log("🚀 Triggering GitHub Actions Workflow...");
     
-            if (!response.ok) {
-                throw new Error(`GitHub API responded with ${response.status}`);
-            }
+        // Step 1: Trigger GitHub Actions workflow
+        const triggerResponse = await fetch("https://api.github.com/repos/itsyoboygod/world-wide-check/actions/workflows/gist-proxy.yml/dispatches", {
+            method: "POST",
+            headers: {
+                "Accept": "application/vnd.github.v3+json",
+                "Authorization": `token GIST_TOKEN`,  // ✅ Temporary (Replace it!)
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({ ref: "main" })  // ✅ Triggers workflow on the 'main' branch
+        });
     
-            const gists = await response.json();
-    
-            if (!Array.isArray(gists)) {
-                console.error("Unexpected response from GitHub API:", gists);
-                return [];
-            }
-    
-            const reports = [];
-    
-            for (const gist of gists) {
-                if (gist.files && gist.files["report.json"]) {
-                    try {
-                        const fileResponse = await fetch(gist.files["report.json"].raw_url);
-                        if (!fileResponse.ok) continue; // Skip if failed
-    
-                        const reportData = await fileResponse.json();
-                        if (reportData.url === url) {
-                            reports.push(reportData);
-                        }
-                    } catch (fileError) {
-                        console.warn("Failed to fetch report file:", fileError);
-                    }
-                }
-            }
-    
-            return reports;
-        } catch (error) {
-            console.error("Error retrieving reports from Gist:", error);
+        if (!triggerResponse.ok) {
+            console.error("❌ Failed to trigger workflow:", await triggerResponse.text());
             return [];
         }
+    
+        console.log("✅ Workflow triggered successfully!");
+    
+        // Step 2: Wait for the workflow to complete (GitHub API doesn’t support real-time waiting, so we retry)
+        await new Promise(resolve => setTimeout(resolve, 5000));  // ✅ Wait 5 seconds
+    
+        // Step 3: Retrieve the artifact (JSON response)
+        const artifactsResponse = await fetch("https://api.github.com/repos/itsyoboygod/world-wide-check/actions/artifacts", {
+            headers: { "Authorization": `token GIST_TOKEN` }
+        });
+    
+        const artifactsData = await artifactsResponse.json();
+        const artifact = artifactsData.artifacts.find(a => a.name === "gists-response");
+    
+        if (!artifact) {
+            console.error("❌ No artifact found!");
+            return [];
+        }
+    
+        // Step 4: Download the artifact
+        const downloadUrl = artifact.archive_download_url;
+        const artifactResponse = await fetch(downloadUrl, {
+            headers: { "Authorization": `token GIST_TOKEN` }
+        });
+    
+        if (!artifactResponse.ok) {
+            console.error("❌ Failed to download artifact:", await artifactResponse.text());
+            return [];
+        }
+    
+        const gistData = await artifactResponse.json();
+        console.log("✅ Retrieved Gists:", gistData);
+    
+        return gistData;
     }
 
     async function displayExistingReports() {
@@ -398,7 +385,6 @@ chrome.runtime.onMessage.addListener((request) => {
         overlay.appendChild(modal);
         document.body.appendChild(overlay);
     }
-
 });
 
 function handleBlurLevelChange(event) {
