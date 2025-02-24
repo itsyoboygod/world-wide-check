@@ -269,55 +269,50 @@ async function saveReportToGist(url, selectedText, selectedFlair) {
     }
 }
 
-// ✅ Fetch Reports for the Current Page URL
-async function getReportsForUrl(url) {
-    if (!GIST_TOKEN) {
-        console.error("❌ GIST_TOKEN is not available");
-        return [];
-    }
-
+async function fetchGistsViaGitHubActions() {
     try {
-        const response = await fetch("https://api.github.com/gists", {
-            method: "GET",
+        const response = await fetch("https://api.github.com/repos/itsyoboygod/world-wide-check/actions/workflows/gist-proxy.yml/dispatches", {
+            method: "POST",
             headers: {
-                "Authorization": `token ${GIST_TOKEN}`
-            }
+                "Accept": "application/vnd.github.everest-preview+json",
+                "Authorization": `token ${CONFIG.GIST_TRIGGER_PAT}`,  // Secure token from config.js
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                ref: "main",
+                inputs: {}
+            })
         });
 
+        if (!response.ok) throw new Error(`GitHub Actions responded with ${response.status}`);
+
+        console.log("✅ GitHub Actions triggered successfully!");
+    } catch (error) {
+        console.error("❌ Failed to fetch Gists via GitHub Actions:", error);
+    }
+}
+
+// ✅ Fetch Reports for the Current Page URL
+async function getReportsForUrl(url) {
+    console.log("🔄 Requesting Gists via GitHub Actions...");
+
+    try {
+        await fetchGistsViaGitHubActions();  // ✅ Securely trigger GitHub Actions
+
+        // Now wait and fetch the processed Gists from your proxy
+        const response = await fetch("https://gist.github.com/itsyoboygod");
+
         if (!response.ok) {
-            throw new Error(`GitHub API responded with ${response.status}`);
+            throw new Error(`Proxy API responded with ${response.status}`);
         }
 
         const gists = await response.json();
-        if (!Array.isArray(gists)) {
-            console.error("Unexpected response from GitHub API:", gists);
-            return [];
-        }
-
-        const reports = [];
-        for (const gist of gists) {
-            if (gist.files && gist.files["report.json"]) {
-                try {
-                    const fileResponse = await fetch(gist.files["report.json"].raw_url);
-                    if (!fileResponse.ok) continue;
-
-                    const reportData = await fileResponse.json();
-                    if (reportData.url === url) {
-                        reports.push(reportData);
-                    }
-                } catch (fileError) {
-                    console.warn("Failed to fetch report file:", fileError);
-                }
-            }
-        }
-
-        return reports;
+        return gists;
     } catch (error) {
         console.error("❌ Error retrieving reports from Gist:", error);
         return [];
     }
 }
-
 
 // ✅ Display Existing Reports on Page Load
 async function displayExistingReports() {

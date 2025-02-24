@@ -1,20 +1,23 @@
-name: Gist Proxy for Chrome Extension
+name: Gist Proxy API
 
 on:
-  workflow_dispatch:  # Allows manual triggering from your extension
+  workflow_dispatch:
 
 jobs:
   fetch-gists:
     runs-on: ubuntu-latest
     steps:
-      - name: Fetch Gists from GitHub API
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Fetch Gists
         run: |
           curl -H "Authorization: token ${{ secrets.GIST_TRIGGER_PAT }}" \
                -H "Accept: application/vnd.github.v3+json" \
-               "https://api.github.com/gists" > gists.json
+               https://api.github.com/gists > gists.json
 
-      - name: Upload JSON as Artifact
+      - name: Upload Gist Data
         uses: actions/upload-artifact@v3
         with:
-          name: gists-response
+          name: gist-data
           path: gists.json
