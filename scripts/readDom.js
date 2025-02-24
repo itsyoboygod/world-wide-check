@@ -203,26 +203,23 @@ chrome.runtime.onMessage.addListener((request) => {
     async function loadConfig() {
         try {
             const response = await fetch(chrome.runtime.getURL("config.js"));
-            if (!response.ok) throw new Error("Config file not found");
+            if (!response.ok) throw new Error("Config file is empty or not found");
     
-            const configText = await response.text();
-            console.log("📄 Raw config.js content:", configText); // Debugging
+            const text = await response.text();
+            const config = JSON.parse(text.replace("const CONFIG =", "").trim()); // Parse JSON safely
     
-            if (!configText.trim()) throw new Error("Config file is empty");
-    
-            // ✅ Parse JSON safely
-            const config = JSON.parse(configText);
-            
-            if (config.GIST_TOKEN) {
-                GIST_TOKEN = config.GIST_TOKEN;
-                console.log("✅ GIST_TOKEN loaded successfully");
+            if (config.GIST_TRIGGER_PAT) {
+                console.log("✅ GIST_TRIGGER_PAT loaded successfully");
+                return config.GIST_TRIGGER_PAT;  // Return token
             } else {
-                console.error("❌ GIST_TOKEN is missing in config.js");
+                throw new Error("GIST_TRIGGER_PAT not found in config.js");
             }
         } catch (error) {
-            console.warn("⚠️ Could not load config.js:", error);
+            console.error("⚠️ Could not load config.js:", error);
+            return null;
         }
     }
+    
     
     // ✅ Load the config at startup
     loadConfig();
@@ -270,12 +267,18 @@ async function saveReportToGist(url, selectedText, selectedFlair) {
 }
 
 async function fetchGistsViaGitHubActions() {
+    const token = await loadConfig();  // Get token first
+    if (!token) {
+        console.error("❌ GIST_TRIGGER_PAT is not available");
+        return;
+    }
+
     try {
         const response = await fetch("https://api.github.com/repos/itsyoboygod/world-wide-check/actions/workflows/gist-proxy.yml/dispatches", {
             method: "POST",
             headers: {
                 "Accept": "application/vnd.github.everest-preview+json",
-                "Authorization": `token ${CONFIG.GIST_TRIGGER_PAT}`,  // Secure token from config.js
+                "Authorization": `token ${token}`,  // Secure token from config.js
                 "Content-Type": "application/json"
             },
             body: JSON.stringify({
@@ -285,12 +288,12 @@ async function fetchGistsViaGitHubActions() {
         });
 
         if (!response.ok) throw new Error(`GitHub Actions responded with ${response.status}`);
-
         console.log("✅ GitHub Actions triggered successfully!");
     } catch (error) {
         console.error("❌ Failed to fetch Gists via GitHub Actions:", error);
     }
 }
+
 
 // ✅ Fetch Reports for the Current Page URL
 async function getReportsForUrl(url) {
