@@ -198,99 +198,146 @@ chrome.runtime.onMessage.addListener((request) => {
         }
     }
 
-    // ✅ Fetch GIST_TOKEN securely from config.js INSIDE the extension
+    let GIST_TOKEN = "";
+
     async function loadConfig() {
         try {
             const response = await fetch(chrome.runtime.getURL("config.js"));
             if (!response.ok) throw new Error("Config file not found");
-
+    
             const configText = await response.text();
-            const configJSON = JSON.parse(configText.replace("const CONFIG =", "").trim()); // ✅ Parse safely
-
-            if (configJSON.GIST_TOKEN) {
+            console.log("📄 Raw config.js content:", configText); // Debugging
+    
+            if (!configText.trim()) throw new Error("Config file is empty");
+    
+            // ✅ Parse JSON safely
+            const config = JSON.parse(configText);
+            
+            if (config.GIST_TOKEN) {
+                GIST_TOKEN = config.GIST_TOKEN;
                 console.log("✅ GIST_TOKEN loaded successfully");
-                return configJSON.GIST_TOKEN;
             } else {
-                throw new Error("CONFIG object is missing GIST_TOKEN");
+                console.error("❌ GIST_TOKEN is missing in config.js");
             }
         } catch (error) {
             console.warn("⚠️ Could not load config.js:", error);
-            return null;
         }
     }
-
-    // Load config and store GIST_TOKEN globally
-    let GIST_TOKEN = "";
-    loadConfig().then(token => GIST_TOKEN = token);
-
-    async function getReportsForUrl(url) {
-        console.log("🚀 Triggering GitHub Actions Workflow...");
     
-        const triggerResponse = await fetch("https://api.github.com/repos/itsyoboygod/world-wide-check/actions/workflows/gist-proxy.yml/dispatches", {
+    // ✅ Load the config at startup
+    loadConfig();
+
+// ✅ Save Report to Gist
+async function saveReportToGist(url, selectedText, selectedFlair) {
+    if (!GIST_TOKEN) {
+        console.error("❌ GIST_TOKEN is not available");
+        return;
+    }
+
+    const report = {
+        url,
+        selectedText,
+        selectedFlair,
+        timestamp: new Date().toISOString()
+    };
+
+    const gistData = {
+        "description": "Anonymous report",
+        "public": true,
+        "files": {
+            "report.json": {
+                "content": JSON.stringify(report, null, 2)
+            }
+        }
+    };
+
+    try {
+        const response = await fetch("https://api.github.com/gists", {
             method: "POST",
             headers: {
-                "Accept": "application/vnd.github.v3+json",
-                "Authorization": `token ${GIST_TOKEN}`, // ✅ Use the stored token
+                "Authorization": `token ${GIST_TOKEN}`,
                 "Content-Type": "application/json"
             },
-            body: JSON.stringify({ ref: "main" })  // ✅ Triggers workflow on the 'main' branch
+            body: JSON.stringify(gistData)
         });
-    
-        if (!triggerResponse.ok) {
-            console.error("❌ Failed to trigger workflow:", await triggerResponse.text());
-            return [];
-        }
-    
-        console.log("✅ Workflow triggered successfully!");
-    
-        // Wait for GitHub to process (5 seconds)
-        await new Promise(resolve => setTimeout(resolve, 5000));
-    
-        // Retrieve the artifact
-        const artifactsResponse = await fetch("https://api.github.com/repos/itsyoboygod/world-wide-check/actions/artifacts", {
-            headers: { "Authorization": `token ${GIST_TOKEN}` }
-        });
-    
-        const artifactsData = await artifactsResponse.json();
-        const artifact = artifactsData.artifacts.find(a => a.name === "gists-response");
-    
-        if (!artifact) {
-            console.error("❌ No artifact found!");
-            return [];
-        }
-    
-        // Download artifact
-        const downloadUrl = artifact.archive_download_url;
-        const artifactResponse = await fetch(downloadUrl, {
-            headers: { "Authorization": `token ${GIST_TOKEN}` }
-        });
-    
-        if (!artifactResponse.ok) {
-            console.error("❌ Failed to download artifact:", await artifactResponse.text());
-            return [];
-        }
-    
-        const gistData = await artifactResponse.json();
-        console.log("✅ Retrieved Gists:", gistData);
-    
-        return gistData;
+
+        const data = await response.json();
+        console.log("✅ Report saved as Gist:", data.html_url);
+        return data.html_url;
+    } catch (error) {
+        console.error("❌ Error saving report to Gist:", error);
+    }
+}
+
+// ✅ Fetch Reports for the Current Page URL
+async function getReportsForUrl(url) {
+    if (!GIST_TOKEN) {
+        console.error("❌ GIST_TOKEN is not available");
+        return [];
     }
 
-    async function displayExistingReports() {
-        const pageUrl = window.location.href;
-        const reports = await getReportsForUrl(pageUrl);
-
-        reports.forEach(report => {
-            injectTargetTextIntoDOM(report.selectedText, report.selectedFlair);
+    try {
+        const response = await fetch("https://api.github.com/gists", {
+            method: "GET",
+            headers: {
+                "Authorization": `token ${GIST_TOKEN}`
+            }
         });
-    }
 
-    displayExistingReports();
-    chrome.runtime.onMessage.addListener((request) => {
-        if (request.action === "openFlagModal") {
-            openFlagModal(request.flags, request.selectedText);
+        if (!response.ok) {
+            throw new Error(`GitHub API responded with ${response.status}`);
         }
+
+        const gists = await response.json();
+        if (!Array.isArray(gists)) {
+            console.error("Unexpected response from GitHub API:", gists);
+            return [];
+        }
+
+        const reports = [];
+        for (const gist of gists) {
+            if (gist.files && gist.files["report.json"]) {
+                try {
+                    const fileResponse = await fetch(gist.files["report.json"].raw_url);
+                    if (!fileResponse.ok) continue;
+
+                    const reportData = await fileResponse.json();
+                    if (reportData.url === url) {
+                        reports.push(reportData);
+                    }
+                } catch (fileError) {
+                    console.warn("Failed to fetch report file:", fileError);
+                }
+            }
+        }
+
+        return reports;
+    } catch (error) {
+        console.error("❌ Error retrieving reports from Gist:", error);
+        return [];
+    }
+}
+
+
+// ✅ Display Existing Reports on Page Load
+async function displayExistingReports() {
+    const pageUrl = window.location.href;
+    const reports = await getReportsForUrl(pageUrl);
+
+    reports.forEach(report => {
+        injectTargetTextIntoDOM(report.selectedText, report.selectedFlair);
     });
+}
+
+// ✅ Run on page load
+displayExistingReports();
+
+// ✅ Listen for messages from the extension
+chrome.runtime.onMessage.addListener((request) => {
+    if (request.action === "openFlagModal") {
+        openFlagModal(request.flags, request.selectedText);
+    }
+});
 
     function openFlagModal(flags, selectedText) {
         if (document.getElementById("target-overlay")) return;
@@ -378,15 +425,10 @@ chrome.runtime.onMessage.addListener((request) => {
             }
         };
 
-        // Append elements to modal
-        modal.appendChild(title);
-        modal.appendChild(textParagraph);
-        modal.appendChild(flagSelect);
-        modal.appendChild(recaptchaBtn);
-        modal.appendChild(confirmBtn);
-        modal.appendChild(cancelBtn);
-        overlay.appendChild(modal);
-        document.body.appendChild(overlay);
+          // Append elements
+    modal.append(title, textParagraph, flagSelect, recaptchaBtn, confirmBtn, cancelBtn);
+    overlay.appendChild(modal);
+    document.body.appendChild(overlay);
     }
 });
 
