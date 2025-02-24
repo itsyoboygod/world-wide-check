@@ -198,36 +198,39 @@ chrome.runtime.onMessage.addListener((request) => {
         }
     }
 
-    let GIST_TOKEN = "";
-
-// ✅ Fetch GIST_TOKEN securely from config.js INSIDE the extension
-fetch(chrome.runtime.getURL("config.js"))
-    .then(response => response.text())
-    .then(script => {
+    // ✅ Fetch GIST_TOKEN securely from config.js INSIDE the extension
+    async function loadConfig() {
         try {
-            const config = new Function(script + "; return CONFIG;")(); // Execute script safely
-            if (config.GIST_TOKEN) {
-                GIST_TOKEN = config.GIST_TOKEN;
+            const response = await fetch(chrome.runtime.getURL("config.js"));
+            if (!response.ok) throw new Error("Config file not found");
+
+            const configText = await response.text();
+            const configJSON = JSON.parse(configText.replace("const CONFIG =", "").trim()); // ✅ Parse safely
+
+            if (configJSON.GIST_TOKEN) {
                 console.log("✅ GIST_TOKEN loaded successfully");
+                return configJSON.GIST_TOKEN;
             } else {
-                console.error("❌ CONFIG object is missing GIST_TOKEN");
+                throw new Error("CONFIG object is missing GIST_TOKEN");
             }
         } catch (error) {
-            console.error("❌ Failed to parse config.js:", error);
+            console.warn("⚠️ Could not load config.js:", error);
+            return null;
         }
-    })
-    .catch(error => console.warn("⚠️ Could not load config.js:", error));
+    }
 
-    
+    // Load config and store GIST_TOKEN globally
+    let GIST_TOKEN = "";
+    loadConfig().then(token => GIST_TOKEN = token);
+
     async function getReportsForUrl(url) {
         console.log("🚀 Triggering GitHub Actions Workflow...");
     
-        // Step 1: Trigger GitHub Actions workflow
         const triggerResponse = await fetch("https://api.github.com/repos/itsyoboygod/world-wide-check/actions/workflows/gist-proxy.yml/dispatches", {
             method: "POST",
             headers: {
                 "Accept": "application/vnd.github.v3+json",
-                "Authorization": `token GIST_TOKEN`,  // ✅ Temporary (Replace it!)
+                "Authorization": `token ${GIST_TOKEN}`, // ✅ Use the stored token
                 "Content-Type": "application/json"
             },
             body: JSON.stringify({ ref: "main" })  // ✅ Triggers workflow on the 'main' branch
@@ -240,12 +243,12 @@ fetch(chrome.runtime.getURL("config.js"))
     
         console.log("✅ Workflow triggered successfully!");
     
-        // Step 2: Wait for the workflow to complete (GitHub API doesn’t support real-time waiting, so we retry)
-        await new Promise(resolve => setTimeout(resolve, 5000));  // ✅ Wait 5 seconds
+        // Wait for GitHub to process (5 seconds)
+        await new Promise(resolve => setTimeout(resolve, 5000));
     
-        // Step 3: Retrieve the artifact (JSON response)
+        // Retrieve the artifact
         const artifactsResponse = await fetch("https://api.github.com/repos/itsyoboygod/world-wide-check/actions/artifacts", {
-            headers: { "Authorization": `token GIST_TOKEN` }
+            headers: { "Authorization": `token ${GIST_TOKEN}` }
         });
     
         const artifactsData = await artifactsResponse.json();
@@ -256,10 +259,10 @@ fetch(chrome.runtime.getURL("config.js"))
             return [];
         }
     
-        // Step 4: Download the artifact
+        // Download artifact
         const downloadUrl = artifact.archive_download_url;
         const artifactResponse = await fetch(downloadUrl, {
-            headers: { "Authorization": `token GIST_TOKEN` }
+            headers: { "Authorization": `token ${GIST_TOKEN}` }
         });
     
         if (!artifactResponse.ok) {

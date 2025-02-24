@@ -9,7 +9,7 @@ jobs:
     steps:
       - name: Fetch Gists from GitHub API
         run: |
-          curl -H "Authorization: token ${{ secrets.GIST_TOKEN }}" \
+          curl -H "Authorization: token ${{ secrets.GIST_TRIGGER_PAT }}" \
                -H "Accept: application/vnd.github.v3+json" \
                "https://api.github.com/gists" > gists.json
 
