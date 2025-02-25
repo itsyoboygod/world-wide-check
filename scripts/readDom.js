@@ -206,7 +206,7 @@ chrome.runtime.onMessage.addListener((request) => {
             if (!response.ok) throw new Error("Config file is empty");
     
             const script = await response.text();
-            const config = JSON.parse(script); // ❌ This is causing CSP issues
+            const config = JSON.parse(script);
     
             if (config.GIST_TOKEN) {
                 GIST_TOKEN = config.GIST_TOKEN;
@@ -218,9 +218,6 @@ chrome.runtime.onMessage.addListener((request) => {
             console.warn("⚠️ Could not load config.js:", error);
         }
     }
-    
-    // ✅ Load the config at startup
-    loadConfig();
 
 // ✅ Save Report to Gist
 async function saveReportToGist(url, selectedText, selectedFlair) {
