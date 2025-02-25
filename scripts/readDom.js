@@ -203,23 +203,21 @@ chrome.runtime.onMessage.addListener((request) => {
     async function loadConfig() {
         try {
             const response = await fetch(chrome.runtime.getURL("config.js"));
-            if (!response.ok) throw new Error("Config file is empty or not found");
+            if (!response.ok) throw new Error("Config file is empty");
     
-            const text = await response.text();
-            const config = JSON.parse(text.replace("const CONFIG =", "").trim()); // Parse JSON safely
+            const script = await response.text();
+            const config = JSON.parse(script); // ❌ This is causing CSP issues
     
-            if (config.GIST_TRIGGER_PAT) {
-                console.log("✅ GIST_TRIGGER_PAT loaded successfully");
-                return config.GIST_TRIGGER_PAT;  // Return token
+            if (config.GIST_TOKEN) {
+                GIST_TOKEN = config.GIST_TOKEN;
+                console.log("✅ GIST_TOKEN loaded successfully");
             } else {
-                throw new Error("GIST_TRIGGER_PAT not found in config.js");
+                console.error("❌ CONFIG object is missing GIST_TOKEN");
             }
         } catch (error) {
-            console.error("⚠️ Could not load config.js:", error);
-            return null;
+            console.warn("⚠️ Could not load config.js:", error);
         }
     }
-    
     
     // ✅ Load the config at startup
     loadConfig();

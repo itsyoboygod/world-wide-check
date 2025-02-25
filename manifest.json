@@ -33,7 +33,6 @@
     {
       "resources": [
         "popup/recaptcha.html",
-        "config.js",
         "popup/recaptcha.js"
       ],
       "matches": [
