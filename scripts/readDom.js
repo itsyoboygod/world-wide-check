@@ -268,16 +268,21 @@ async function saveReportToGist(url, selectedText, selectedFlair) {
 
 async function fetchGistsViaGitHubActions() {
     try {
-        const response = await fetch("https://itsyoboygod.github.io/world-wide-check/gist-proxy.json");
+        const response = await fetch("https://itsyoboygod.github.io/world-wide-check/gist-proxy.json", {
+            cache: "no-store" // Ensures you're not fetching an outdated version
+        });
         if (!response.ok) throw new Error(`GitHub Actions responded with ${response.status}`);
+        
         const data = await response.json();
         if (!data.GIST_TRIGGER_PAT) throw new Error("GIST_TRIGGER_PAT is missing in response");
+
+        console.log("✅ Successfully fetched GIST_TRIGGER_PAT");
         return data.GIST_TRIGGER_PAT;
     } catch (error) {
         console.error("❌ Failed to fetch Gists via GitHub Actions:", error);
+        return null;
     }
 }
-
 
 // ✅ Fetch Reports for the Current Page URL
 async function getReportsForUrl(url) {
@@ -295,11 +300,6 @@ async function getReportsForUrl(url) {
         if (!response.ok) throw new Error(`GitHub API responded with ${response.status}`);
 
         const gists = await response.json();
-        if (!Array.isArray(gists)) {
-            console.error("Unexpected response from GitHub API:", gists);
-            return [];
-        }
-
         return gists.filter(gist => gist.files["report.json"])
             .map(gist => fetch(gist.files["report.json"].raw_url).then(res => res.json()));
     } catch (error) {
