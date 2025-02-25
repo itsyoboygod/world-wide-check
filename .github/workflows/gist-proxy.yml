@@ -19,7 +19,7 @@ jobs:
 
       - name: Create config.js dynamically
         run: |
-          echo "const CONFIG = { \"GIST_TRIGGER_PAT\": \"${{ secrets.GIST_TRIGGER_PAT }}\" };" > config.js
+          echo "{ \"GIST_TRIGGER_PAT\": \"${{ secrets.GIST_TRIGGER_PAT }}\" }" > gist-proxy.json
 
       - name: Upload artifact for deployment
         uses: actions/upload-pages-artifact@v3

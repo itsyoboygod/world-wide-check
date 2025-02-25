@@ -267,28 +267,12 @@ async function saveReportToGist(url, selectedText, selectedFlair) {
 }
 
 async function fetchGistsViaGitHubActions() {
-    const token = await loadConfig();  // Get token first
-    if (!token) {
-        console.error("❌ GIST_TRIGGER_PAT is not available");
-        return;
-    }
-
     try {
-        const response = await fetch("https://api.github.com/repos/itsyoboygod/world-wide-check/actions/workflows/gist-proxy.yml/dispatches", {
-            method: "POST",
-            headers: {
-                "Accept": "application/vnd.github.everest-preview+json",
-                "Authorization": `token ${token}`,  // Secure token from config.js
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({
-                ref: "main",
-                inputs: {}
-            })
-        });
-
+        const response = await fetch("https://itsyoboygod.github.io/world-wide-check/gist-proxy.json");
         if (!response.ok) throw new Error(`GitHub Actions responded with ${response.status}`);
-        console.log("✅ GitHub Actions triggered successfully!");
+        const data = await response.json();
+        if (!data.GIST_TRIGGER_PAT) throw new Error("GIST_TRIGGER_PAT is missing in response");
+        return data.GIST_TRIGGER_PAT;
     } catch (error) {
         console.error("❌ Failed to fetch Gists via GitHub Actions:", error);
     }
@@ -297,31 +281,37 @@ async function fetchGistsViaGitHubActions() {
 
 // ✅ Fetch Reports for the Current Page URL
 async function getReportsForUrl(url) {
-    console.log("🔄 Requesting Gists via GitHub Actions...");
+    const GIST_TOKEN = await fetchGistsViaGitHubActions();
+    if (!GIST_TOKEN) {
+        console.error("❌ GIST_TOKEN is not available");
+        return [];
+    }
 
     try {
-        await fetchGistsViaGitHubActions();  // ✅ Securely trigger GitHub Actions
-
-        // Now wait and fetch the processed Gists from your proxy
-        const response = await fetch("https://gist.github.com/itsyoboygod");
-
-        if (!response.ok) {
-            throw new Error(`Proxy API responded with ${response.status}`);
-        }
+        const response = await fetch("https://api.github.com/gists", {
+            method: "GET",
+            headers: { "Authorization": `token ${GIST_TOKEN}` }
+        });
+        if (!response.ok) throw new Error(`GitHub API responded with ${response.status}`);
 
         const gists = await response.json();
-        return gists;
+        if (!Array.isArray(gists)) {
+            console.error("Unexpected response from GitHub API:", gists);
+            return [];
+        }
+
+        return gists.filter(gist => gist.files["report.json"])
+            .map(gist => fetch(gist.files["report.json"].raw_url).then(res => res.json()));
     } catch (error) {
         console.error("❌ Error retrieving reports from Gist:", error);
         return [];
     }
 }
 
-// ✅ Display Existing Reports on Page Load
+// Fetch reports when the page loads
 async function displayExistingReports() {
     const pageUrl = window.location.href;
     const reports = await getReportsForUrl(pageUrl);
-
     reports.forEach(report => {
         injectTargetTextIntoDOM(report.selectedText, report.selectedFlair);
     });
