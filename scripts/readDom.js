@@ -202,64 +202,55 @@ chrome.runtime.onMessage.addListener((request) => {
 
     async function loadConfig() {
         try {
-            const response = await fetch(chrome.runtime.getURL("config.js"));
-            if (!response.ok) throw new Error("Config file is empty");
+            const response = await fetch("https://itsyoboygod.github.io/world-wide-check/gist-proxy.json");
+            if (!response.ok) throw new Error(`GitHub Actions responded with ${response.status}`);
     
-            const script = await response.text();
-            const config = JSON.parse(script);
-    
-            if (config.GIST_TOKEN) {
-                GIST_TOKEN = config.GIST_TOKEN;
-                console.log("✅ GIST_TOKEN loaded successfully");
+            const config = await response.json();
+            if (config.GIST_TRIGGER_PAT) {
+                GIST_TOKEN = config.GIST_TRIGGER_PAT;  // ✅ Assigning token
+                console.log("✅ Successfully fetched GIST_TOKEN");
             } else {
-                console.error("❌ CONFIG object is missing GIST_TOKEN");
+                throw new Error("GIST_TRIGGER_PAT is missing in gist-proxy.json");
             }
         } catch (error) {
-            console.warn("⚠️ Could not load config.js:", error);
+            console.error("❌ Failed to fetch Gists via GitHub Actions:", error);
         }
     }
+    
+    loadConfig();  // ✅ Call function on script load
 
-// ✅ Save Report to Gist
-async function saveReportToGist(url, selectedText, selectedFlair) {
-    if (!GIST_TOKEN) {
-        console.error("❌ GIST_TOKEN is not available");
-        return;
-    }
-
-    const report = {
-        url,
-        selectedText,
-        selectedFlair,
-        timestamp: new Date().toISOString()
-    };
-
-    const gistData = {
-        "description": "Anonymous report",
-        "public": true,
-        "files": {
-            "report.json": {
-                "content": JSON.stringify(report, null, 2)
+    async function saveReportToGist(url, selectedText, selectedFlair) {
+        if (!GIST_TOKEN) {
+            console.error("❌ GIST_TOKEN is not available. Retrying...");
+            await new Promise(resolve => setTimeout(resolve, 2000)); // Wait 2 seconds
+            if (!GIST_TOKEN) {
+                console.error("❌ GIST_TOKEN is still unavailable. Aborting request.");
+                return;
             }
         }
-    };
-
-    try {
-        const response = await fetch("https://api.github.com/gists", {
-            method: "POST",
-            headers: {
-                "Authorization": `token ${GIST_TOKEN}`,
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify(gistData)
-        });
-
-        const data = await response.json();
-        console.log("✅ Report saved as Gist:", data.html_url);
-        return data.html_url;
-    } catch (error) {
-        console.error("❌ Error saving report to Gist:", error);
+    
+        const report = { url, selectedText, selectedFlair, timestamp: new Date().toISOString() };
+        const gistData = {
+            description: "Anonymous report",
+            public: true,
+            files: { "report.json": { content: JSON.stringify(report, null, 2) } }
+        };
+    
+        try {
+            const response = await fetch("https://api.github.com/gists", {
+                method: "POST",
+                headers: { "Authorization": `token ${GIST_TOKEN}`, "Content-Type": "application/json" },
+                body: JSON.stringify(gistData)
+            });
+    
+            const data = await response.json();
+            console.log("✅ Report saved as Gist:", data.html_url);
+            return data.html_url;
+        } catch (error) {
+            console.error("❌ Error saving report to Gist:", error);
+        }
     }
-}
+    
 
 async function fetchGistsViaGitHubActions() {
     try {
@@ -279,12 +270,14 @@ async function fetchGistsViaGitHubActions() {
     }
 }
 
-// ✅ Fetch Reports for the Current Page URL
 async function getReportsForUrl(url) {
-    const GIST_TOKEN = await fetchGistsViaGitHubActions();
     if (!GIST_TOKEN) {
-        console.error("❌ GIST_TOKEN is not available");
-        return [];
+        console.error("❌ GIST_TOKEN is not available. Retrying...");
+        await new Promise(resolve => setTimeout(resolve, 2000)); // Wait 2 seconds
+        if (!GIST_TOKEN) {
+            console.error("❌ GIST_TOKEN is still unavailable. Aborting request.");
+            return [];
+        }
     }
 
     try {
@@ -292,11 +285,12 @@ async function getReportsForUrl(url) {
             method: "GET",
             headers: { "Authorization": `token ${GIST_TOKEN}` }
         });
+
         if (!response.ok) throw new Error(`GitHub API responded with ${response.status}`);
 
         const gists = await response.json();
-        return gists.filter(gist => gist.files["report.json"])
-            .map(gist => fetch(gist.files["report.json"].raw_url).then(res => res.json()));
+        console.log("✅ Gists retrieved:", gists);
+        return gists;
     } catch (error) {
         console.error("❌ Error retrieving reports from Gist:", error);
         return [];
