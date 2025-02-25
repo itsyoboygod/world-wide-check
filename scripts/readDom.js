@@ -119,25 +119,34 @@ function readDom() {
 
 chrome.runtime.onMessage.addListener((request) => {
     function injectTargetTextIntoDOM(selectedText, selectedFlair) {
+        if (!selectedText) {
+            console.warn("⚠️ No text provided to highlight.");
+            return;
+        }
+    
         const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
         let node;
         while ((node = walker.nextNode())) {
             const parent = node.parentNode;
             if (parent.closest("#highlighted-text") || parent.closest("#target-txt_selected")) { continue; }
+            
             const nodeText = node.nodeValue.trim();
             if (nodeText.includes(selectedText)) {
                 const parts = nodeText.split(selectedText);
-                const targetSpan = createElement("span", {
-                    id: "target-txt_selected",
-                    textContent: selectedText,
-                });
+                const targetSpan = document.createElement("span");
+                targetSpan.id = "target-txt_selected";
+                targetSpan.textContent = selectedText;
                 targetSpan.dataset.flair = selectedFlair;
                 targetSpan.style.setProperty("--clr-flair", selectedFlair);
+                targetSpan.style.backgroundColor = "yellow"; // ✅ Ensure visible highlighting
+    
                 const fragment = document.createDocumentFragment();
                 if (parts[0]) fragment.appendChild(document.createTextNode(parts[0]));
                 fragment.appendChild(targetSpan);
                 if (parts[1]) fragment.appendChild(document.createTextNode(parts[1]));
+    
                 parent.replaceChild(fragment, node);
+                console.log(`✅ Highlighted: "${selectedText}" with flair "${selectedFlair}"`);
                 break;
             }
         }
@@ -297,12 +306,24 @@ async function getReportsForUrl(url) {
     }
 }
 
-// Fetch reports when the page loads
 async function displayExistingReports() {
     const pageUrl = window.location.href;
     const reports = await getReportsForUrl(pageUrl);
+
+    if (!reports.length) {
+        console.log("⚠️ No reports found for this URL.");
+        return;
+    }
+
+    console.log(`✅ Found ${reports.length} reports for this page.`);
+
     reports.forEach(report => {
-        injectTargetTextIntoDOM(report.selectedText, report.selectedFlair);
+        if (report.selectedText && report.selectedFlair) {
+            console.log(`📌 Injecting report: ${report.selectedText} - ${report.selectedFlair}`);
+            injectTargetTextIntoDOM(report.selectedText, report.selectedFlair);
+        } else {
+            console.warn("⚠️ Skipping invalid report:", report);
+        }
     });
 }
 
