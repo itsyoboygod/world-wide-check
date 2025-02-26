@@ -19,9 +19,7 @@ jobs:
 
       - name: Create config.js dynamically
         run: |
-          echo "{" > config.js
           echo "{ \"GIST_TOKEN\": \"${{ secrets.GIST_TOKEN }}\" }" > config.js
-          echo "};" >> config.js
 
 
       - name: Upload artifact for deployment

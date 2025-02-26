@@ -280,28 +280,42 @@ async function fetchGistsViaGitHubActions() {
 }
 
 async function getReportsForUrl(url) {
-    if (!GIST_TOKEN) {
-        console.error("❌ GIST_TOKEN is not available. Retrying...");
-        await new Promise(resolve => setTimeout(resolve, 2000)); // Wait 2 seconds
-        if (!GIST_TOKEN) {
-            console.error("❌ GIST_TOKEN is still unavailable. Aborting request.");
-            return [];
-        }
-    }
-
     try {
-        const response = await fetch("https://api.github.com/gists", {
+        // Step 1: Fetch the secure GIST_TRIGGER_PAT from GitHub Pages
+        const configResponse = await fetch("https://itsyoboygod.github.io/world-wide-check/gist-proxy.json");
+        if (!configResponse.ok) throw new Error("Failed to fetch Gist proxy config");
+
+        const configData = await configResponse.json();
+        if (!configData.GIST_TRIGGER_PAT) throw new Error("GIST_TRIGGER_PAT is missing from proxy config");
+
+        // Step 2: Use GIST_TRIGGER_PAT to fetch Gists securely
+        const gistResponse = await fetch("https://api.github.com/gists", {
             method: "GET",
-            headers: { "Authorization": `token ${GIST_TOKEN}` }
+            headers: { "Authorization": `token ${configData.GIST_TRIGGER_PAT}` }
         });
 
-        if (!response.ok) throw new Error(`GitHub API responded with ${response.status}`);
+        if (!gistResponse.ok) {
+            throw new Error(`GitHub API responded with ${gistResponse.status}`);
+        }
 
-        const gists = await response.json();
+        // Step 3: Parse the Gist data
+        const gists = await gistResponse.json();
         console.log("✅ Gists retrieved:", gists);
-        return gists;
+
+        // Step 4: Extract reports related to the current URL
+        const reports = gists.filter(gist =>
+            gist.files && gist.files["report.json"]
+        ).map(async gist => {
+            const fileResponse = await fetch(gist.files["report.json"].raw_url);
+            if (!fileResponse.ok) return null; // Skip failed requests
+
+            const reportData = await fileResponse.json();
+            return reportData.url === url ? reportData : null;
+        });
+
+        return (await Promise.all(reports)).filter(report => report !== null);
     } catch (error) {
-        console.error("❌ Error retrieving reports from Gist:", error);
+        console.error("❌ Failed to fetch Gists via GitHub Actions:", error);
         return [];
     }
 }
@@ -310,20 +324,13 @@ async function displayExistingReports() {
     const pageUrl = window.location.href;
     const reports = await getReportsForUrl(pageUrl);
 
-    if (!reports.length) {
-        console.log("⚠️ No reports found for this URL.");
+    if (reports.length === 0) {
+        console.warn("⚠️ No reports found for this URL.");
         return;
     }
 
-    console.log(`✅ Found ${reports.length} reports for this page.`);
-
     reports.forEach(report => {
-        if (report.selectedText && report.selectedFlair) {
-            console.log(`📌 Injecting report: ${report.selectedText} - ${report.selectedFlair}`);
-            injectTargetTextIntoDOM(report.selectedText, report.selectedFlair);
-        } else {
-            console.warn("⚠️ Skipping invalid report:", report);
-        }
+        injectTargetTextIntoDOM(report.selectedText, report.selectedFlair);
     });
 }
 
