@@ -259,7 +259,6 @@ chrome.runtime.onMessage.addListener((request) => {
             console.error("❌ Error saving report to Gist:", error);
         }
     }
-    
 
 async function fetchGistsViaGitHubActions() {
     try {
@@ -280,42 +279,24 @@ async function fetchGistsViaGitHubActions() {
 }
 
 async function getReportsForUrl(url) {
+    const GIST_TOKEN = await fetchGistsViaGitHubActions();
+    if (!GIST_TOKEN) {
+        console.error("❌ GIST_TOKEN is not available");
+        return [];
+    }
+
     try {
-        // Step 1: Fetch the secure GIST_TRIGGER_PAT from GitHub Pages
-        const configResponse = await fetch("https://itsyoboygod.github.io/world-wide-check/gist-proxy.json");
-        if (!configResponse.ok) throw new Error("Failed to fetch Gist proxy config");
-
-        const configData = await configResponse.json();
-        if (!configData.GIST_TRIGGER_PAT) throw new Error("GIST_TRIGGER_PAT is missing from proxy config");
-
-        // Step 2: Use GIST_TRIGGER_PAT to fetch Gists securely
-        const gistResponse = await fetch("https://api.github.com/gists", {
+        const response = await fetch("https://api.github.com/gists", {
             method: "GET",
-            headers: { "Authorization": `token ${configData.GIST_TRIGGER_PAT}` }
+            headers: { "Authorization": `token ${GIST_TOKEN}` }
         });
+        if (!response.ok) throw new Error(`GitHub API responded with ${response.status}`);
 
-        if (!gistResponse.ok) {
-            throw new Error(`GitHub API responded with ${gistResponse.status}`);
-        }
-
-        // Step 3: Parse the Gist data
-        const gists = await gistResponse.json();
-        console.log("✅ Gists retrieved:", gists);
-
-        // Step 4: Extract reports related to the current URL
-        const reports = gists.filter(gist =>
-            gist.files && gist.files["report.json"]
-        ).map(async gist => {
-            const fileResponse = await fetch(gist.files["report.json"].raw_url);
-            if (!fileResponse.ok) return null; // Skip failed requests
-
-            const reportData = await fileResponse.json();
-            return reportData.url === url ? reportData : null;
-        });
-
-        return (await Promise.all(reports)).filter(report => report !== null);
+        const gists = await response.json();
+        return gists.filter(gist => gist.files["report.json"])
+            .map(gist => fetch(gist.files["report.json"].raw_url).then(res => res.json()));
     } catch (error) {
-        console.error("❌ Failed to fetch Gists via GitHub Actions:", error);
+        console.error("❌ Error retrieving reports from Gist:", error);
         return [];
     }
 }
