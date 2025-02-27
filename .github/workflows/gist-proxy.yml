@@ -3,7 +3,7 @@ name: Deploy Gist Proxy
 on:
   push:
     branches:
-      - gh-pages
+      - gh-pages  # ✅ Make sure this runs on gh-pages branch
 
 permissions:
   contents: read
@@ -29,11 +29,8 @@ jobs:
   deploy:
     needs: build
     runs-on: ubuntu-latest
-    environment:
-      name: github-pages  # ✅ Explicitly defining environment
+    environment:  # ✅ Add this line
+      name: github-pages
     steps:
-      - name: Set Environment Name  # ✅ Add this step
-        run: echo "GITHUB_ENVIRONMENT_NAME=github-pages" >> $GITHUB_ENV
-
       - name: Deploy to GitHub Pages
         uses: actions/deploy-pages@v4
