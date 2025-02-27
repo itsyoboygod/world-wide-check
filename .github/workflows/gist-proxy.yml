@@ -3,7 +3,8 @@ name: Deploy Gist Proxy
 on:
   push:
     branches:
-      - gh-pages  # ✅ Make sure this runs on gh-pages branch
+      - gh-pages  # ✅ Ensure this runs on gh-pages branch
+  workflow_dispatch:  # ✅ Allow manual triggering
 
 permissions:
   contents: read
@@ -14,12 +15,15 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout code
+      - name: Checkout gh-pages branch
         uses: actions/checkout@v4
+        with:
+          ref: gh-pages  # ✅ Ensure this checks out the correct branch
 
       - name: Create Gist Proxy JSON
         run: |
           echo "{ \"GIST_TRIGGER_PAT\": \"${{ secrets.GIST_TRIGGER_PAT }}\" }" > gist-proxy.json
+          cat gist-proxy.json  # ✅ Debugging: Print the file to check if it was created
 
       - name: Upload artifact for deployment
         uses: actions/upload-pages-artifact@v3
@@ -29,8 +33,8 @@ jobs:
   deploy:
     needs: build
     runs-on: ubuntu-latest
-    environment:  # ✅ Add this line
-      name: github-pages
+    environment:
+      name: github-pages  # ✅ Ensure this matches GitHub Pages environment
     steps:
       - name: Deploy to GitHub Pages
         uses: actions/deploy-pages@v4
