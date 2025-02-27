@@ -30,7 +30,10 @@ jobs:
     needs: build
     runs-on: ubuntu-latest
     environment:
-      name: github-pages
+      name: github-pages  # ✅ Explicitly defining environment
     steps:
+      - name: Set Environment Name  # ✅ Add this step
+        run: echo "GITHUB_ENVIRONMENT_NAME=github-pages" >> $GITHUB_ENV
+
       - name: Deploy to GitHub Pages
         uses: actions/deploy-pages@v4
