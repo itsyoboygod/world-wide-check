@@ -3,7 +3,7 @@ name: Deploy Gist Proxy
 on:
   push:
     branches:
-      - main
+      - gh-pages
 
 permissions:
   contents: read
@@ -29,6 +29,8 @@ jobs:
   deploy:
     needs: build
     runs-on: ubuntu-latest
+    environment:
+      name: github-pages
     steps:
       - name: Deploy to GitHub Pages
         uses: actions/deploy-pages@v4
