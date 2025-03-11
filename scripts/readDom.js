@@ -13,16 +13,14 @@ function openFlagModal(flags, selectedText) {
     overlay.style.cssText = `
         position: fixed; top: 0; left: 0; width: 100%; height: 100%;
         background: rgba(0,0,0,0.5); display: flex; justify-content: center;
-        align-items: center; z-index: 10000;
-    `;
+        align-items: center; z-index: 10000;`;
 
     // Create modal
     const modal = document.createElement("div");
     modal.id = "target-modal";
     modal.style.cssText = `
         background: white; padding: 1rem; border-radius: 5px; text-align: center;
-        box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
-    `;
+        box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);`;
 
     // Title and selected text preview
     const title = document.createElement("h3");
@@ -118,40 +116,6 @@ function readDom() {
 }
 
 chrome.runtime.onMessage.addListener((request) => {
-    function injectTargetTextIntoDOM(selectedText, selectedFlair) {
-        if (!selectedText) {
-            console.warn("⚠️ No text provided to highlight.");
-            return;
-        }
-    
-        const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
-        let node;
-        while ((node = walker.nextNode())) {
-            const parent = node.parentNode;
-            if (parent.closest("#highlighted-text") || parent.closest("#target-txt_selected")) { continue; }
-            
-            const nodeText = node.nodeValue.trim();
-            if (nodeText.includes(selectedText)) {
-                const parts = nodeText.split(selectedText);
-                const targetSpan = document.createElement("span");
-                targetSpan.id = "target-txt_selected";
-                targetSpan.textContent = selectedText;
-                targetSpan.dataset.flair = selectedFlair;
-                targetSpan.style.setProperty("--clr-flair", selectedFlair);
-                targetSpan.style.backgroundColor = "yellow"; // ✅ Ensure visible highlighting
-    
-                const fragment = document.createDocumentFragment();
-                if (parts[0]) fragment.appendChild(document.createTextNode(parts[0]));
-                fragment.appendChild(targetSpan);
-                if (parts[1]) fragment.appendChild(document.createTextNode(parts[1]));
-    
-                parent.replaceChild(fragment, node);
-                console.log(`✅ Highlighted: "${selectedText}" with flair "${selectedFlair}"`);
-                break;
-            }
-        }
-    }
-
     // Modify the message listener to use openFlagModal
     chrome.runtime.onMessage.addListener((request) => {
         if (request.action === "openFlagModal") {
@@ -207,52 +171,183 @@ chrome.runtime.onMessage.addListener((request) => {
         }
     }
 
+    const GIST_URL = "https://gist.github.com/itsyoboygod";
     let GIST_TOKEN = "";
 
+    // ✅ Fetch GIST_TOKEN securely
+    fetchGistTokenFromGitHubActions().then(token => {
+        if (token) {
+            GIST_TOKEN = token;
+            console.log("✅ GIST_TOKEN Loaded Securely:", GIST_TOKEN);
+        } else {
+            console.error("❌ GIST_TOKEN is not available");
+        }
+    });
+
+
+    // ✅ Load Config (Fetches the GIST_TOKEN)
     async function loadConfig() {
         try {
             const response = await fetch("https://itsyoboygod.github.io/world-wide-check/gist-proxy.json");
-            if (!response.ok) throw new Error(`GitHub Actions responded with ${response.status}`);
-    
+            if (!response.ok) throw new Error("Config file not found");
+
             const config = await response.json();
-            if (config.GIST_TRIGGER_PAT) {
-                GIST_TOKEN = config.GIST_TRIGGER_PAT;  // ✅ Assigning token
-                console.log("✅ Successfully fetched GIST_TOKEN");
-            } else {
-                throw new Error("GIST_TRIGGER_PAT is missing in gist-proxy.json");
-            }
+            if (!config.GIST_TRIGGER_PAT) throw new Error("GIST_TRIGGER_PAT is missing");
+
+            console.log("✅ Successfully fetched GIST_TRIGGER_PAT");
+            return config.GIST_TRIGGER_PAT;
         } catch (error) {
-            console.error("❌ Failed to fetch Gists via GitHub Actions:", error);
+            console.warn("⚠️ Could not load GIST_TOKEN:", error);
+            return null;
         }
     }
-    
-    loadConfig();  // ✅ Call function on script load
+
+    // ✅ Fetch Reddit Reports
+    async function fetchRedditReports(url) {
+        try {
+            const apiUrl = `https://www.reddit.com/search.json?q=${encodeURIComponent(url)}`;
+            const response = await fetch(apiUrl);
+            if (!response.ok) throw new Error(`Reddit API responded with ${response.status}`);
+
+            const data = await response.json();
+            console.log("✅ Reddit Reports Retrieved:", data);
+            return data.data.children.map(post => post.data);
+        } catch (error) {
+            console.error("❌ Error fetching Reddit reports:", error);
+            return [];
+        }
+    }
+
+    // ✅ Fetch Anonymous Reports from Gist
+    async function fetchAnonymousReports() {
+        if (!GIST_TOKEN) {
+            console.warn("⚠️ GIST_TOKEN is not available. Retrying...");
+            return [];
+        }
+
+        try {
+            const response = await fetch("https://api.github.com/gists", {
+                method: "GET",
+                headers: {
+                    "Authorization": `token ${GIST_TOKEN}`
+                }
+            });
+
+            if (!response.ok) {
+                throw new Error(`GitHub API responded with ${response.status}`);
+            }
+
+            const gists = await response.json();
+            console.log("✅ Anonymous Reports Retrieved:", gists);
+
+            return gists;
+        } catch (error) {
+            console.error("❌ Error retrieving anonymous reports:", error);
+            return [];
+        }
+    }
+
+
+    // ✅ Inject Highlighted Text into DOM
+    function injectTargetTextIntoDOM(selectedText, selectedFlair) {
+        if (!selectedText || !selectedFlair) {
+            console.warn("⚠️ No text or flair provided to highlight.");
+            return;
+        }
+
+        const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
+        let node;
+
+        while ((node = walker.nextNode())) {
+            const parent = node.parentNode;
+            if (parent.closest("#highlighted-text, #target-txt_selected")) continue;
+
+            const nodeText = node.nodeValue.trim();
+            if (nodeText.includes(selectedText)) {
+                const parts = nodeText.split(selectedText);
+                const span = document.createElement("span");
+                span.id = "target-txt_selected";
+                span.textContent = selectedText;
+                span.dataset.flair = selectedFlair;
+                span.style.setProperty("--clr-flair", selectedFlair);
+
+                const fragment = document.createDocumentFragment();
+                if (parts[0]) fragment.appendChild(document.createTextNode(parts[0]));
+                fragment.appendChild(span);
+                if (parts[1]) fragment.appendChild(document.createTextNode(parts[1]));
+
+                parent.replaceChild(fragment, node);
+                break;
+            }
+        }
+    }
+
+    // ✅ Process and Display Reports
+    async function displayExistingReports() {
+        const pageUrl = window.location.href;
+
+        const [redditReports, anonymousReports] = await Promise.all([
+            fetchRedditReports(pageUrl),
+            fetchAnonymousReports(GIST_TOKEN)
+        ]);
+
+        console.log("✅ Reddit Reports:", redditReports);
+        console.log("✅ Anonymous Reports:", anonymousReports);
+
+        redditReports.forEach(report => {
+            injectTargetTextIntoDOM(report.title || report.selftext, "Reported");
+        });
+
+        anonymousReports.forEach(gist => {
+            fetch(gist.files["report.json"].raw_url)
+                .then(response => response.json())
+                .then(data => injectTargetTextIntoDOM(data.selectedText, data.selectedFlair))
+                .catch(error => console.warn("⚠️ Skipping invalid report:", error));
+        });
+    }
 
     async function saveReportToGist(url, selectedText, selectedFlair) {
         if (!GIST_TOKEN) {
-            console.error("❌ GIST_TOKEN is not available. Retrying...");
-            await new Promise(resolve => setTimeout(resolve, 2000)); // Wait 2 seconds
-            if (!GIST_TOKEN) {
-                console.error("❌ GIST_TOKEN is still unavailable. Aborting request.");
-                return;
-            }
+            console.error("❌ GIST_TOKEN is not available");
+            return;
         }
-    
-        const report = { url, selectedText, selectedFlair, timestamp: new Date().toISOString() };
-        const gistData = {
-            description: "Anonymous report",
-            public: true,
-            files: { "report.json": { content: JSON.stringify(report, null, 2) } }
+
+        const report = {
+            url,
+            selectedText,
+            selectedFlair,
+            timestamp: new Date().toISOString()
         };
-    
+
+        const gistData = {
+            "description": "Anonymous report",
+            "public": true,
+            "files": {
+                "report.json": {
+                    "content": JSON.stringify(report, null, 2)
+                }
+            }
+        };
+
         try {
+            console.log("🔄 Sending request to GitHub API:", JSON.stringify(gistData, null, 2));
+
             const response = await fetch("https://api.github.com/gists", {
                 method: "POST",
-                headers: { "Authorization": `token ${GIST_TOKEN}`, "Content-Type": "application/json" },
+                headers: {
+                    "Authorization": `token ${GIST_TOKEN}`,
+                    "Content-Type": "application/json"
+                },
                 body: JSON.stringify(gistData)
             });
-    
+
             const data = await response.json();
+            console.log("✅ GitHub API Response:", data);
+
+            if (!response.ok) {
+                throw new Error(`GitHub API Error: ${response.status} - ${data.message || "Unknown error"}`);
+            }
+
             console.log("✅ Report saved as Gist:", data.html_url);
             return data.html_url;
         } catch (error) {
@@ -260,70 +355,45 @@ chrome.runtime.onMessage.addListener((request) => {
         }
     }
 
-async function fetchGistsViaGitHubActions() {
-    try {
-        const response = await fetch("https://itsyoboygod.github.io/world-wide-check/gist-proxy.json", {
-            cache: "no-store" // Ensures you're not fetching an outdated version
-        });
-        if (!response.ok) throw new Error(`GitHub Actions responded with ${response.status}`);
-        
-        const data = await response.json();
-        if (!data.GIST_TRIGGER_PAT) throw new Error("GIST_TRIGGER_PAT is missing in response");
 
-        console.log("✅ Successfully fetched GIST_TRIGGER_PAT");
-        return data.GIST_TRIGGER_PAT;
-    } catch (error) {
-        console.error("❌ Failed to fetch Gists via GitHub Actions:", error);
-        return null;
-    }
-}
+    async function fetchGistTokenFromGitHubActions() {
+        try {
+            console.log("🔄 Fetching GIST_TRIGGER_PAT...");
+            const response = await fetch("https://itsyoboygod.github.io/world-wide-check/gist-proxy.json");
 
-async function getReportsForUrl(url) {
-    const GIST_TOKEN = await fetchGistsViaGitHubActions();
-    if (!GIST_TOKEN) {
-        console.error("❌ GIST_TOKEN is not available");
-        return [];
-    }
+            if (!response.ok) {
+                throw new Error(`GitHub API responded with ${response.status}`);
+            }
 
-    try {
-        const response = await fetch("https://api.github.com/gists", {
-            method: "GET",
-            headers: { "Authorization": `token ${GIST_TOKEN}` }
-        });
-        if (!response.ok) throw new Error(`GitHub API responded with ${response.status}`);
+            const data = await response.json();
+            console.log("✅ Successfully fetched GIST_TRIGGER_PAT:", data);
 
-        const gists = await response.json();
-        return gists.filter(gist => gist.files["report.json"])
-            .map(gist => fetch(gist.files["report.json"].raw_url).then(res => res.json()));
-    } catch (error) {
-        console.error("❌ Error retrieving reports from Gist:", error);
-        return [];
-    }
-}
+            if (!data.GIST_TRIGGER_PAT) {
+                throw new Error("❌ GIST_TRIGGER_PAT is missing from response.");
+            }
 
-async function displayExistingReports() {
-    const pageUrl = window.location.href;
-    const reports = await getReportsForUrl(pageUrl);
-
-    if (reports.length === 0) {
-        console.warn("⚠️ No reports found for this URL.");
-        return;
+            return data.GIST_TRIGGER_PAT;
+        } catch (error) {
+            console.error("❌ Failed to fetch GIST_TRIGGER_PAT:", error);
+            return null;
+        }
     }
 
-    reports.forEach(report => {
-        injectTargetTextIntoDOM(report.selectedText, report.selectedFlair);
+
+    // ✅ Initialize Everything
+    async function init() {
+        const GIST_TOKEN = await loadConfig();
+        displayExistingReports(GIST_TOKEN);
+    }
+
+    init();
+
+    // ✅ Listen for messages from the extension
+    chrome.runtime.onMessage.addListener((request) => {
+        if (request.action === "openFlagModal") {
+            openFlagModal(request.flags, request.selectedText);
+        }
     });
-}
-
-// ✅ Run on page load
-displayExistingReports();
-
-// ✅ Listen for messages from the extension
-chrome.runtime.onMessage.addListener((request) => {
-    if (request.action === "openFlagModal") {
-        openFlagModal(request.flags, request.selectedText);
-    }
-});
 
     function openFlagModal(flags, selectedText) {
         if (document.getElementById("target-overlay")) return;
@@ -411,10 +481,10 @@ chrome.runtime.onMessage.addListener((request) => {
             }
         };
 
-          // Append elements
-    modal.append(title, textParagraph, flagSelect, recaptchaBtn, confirmBtn, cancelBtn);
-    overlay.appendChild(modal);
-    document.body.appendChild(overlay);
+        // Append elements
+        modal.append(title, textParagraph, flagSelect, recaptchaBtn, confirmBtn, cancelBtn);
+        overlay.appendChild(modal);
+        document.body.appendChild(overlay);
     }
 });
 
