@@ -66,7 +66,8 @@
   font-family: monospace;
 }
 
-#highlighted-text:hover:after, #target-txt_selected:hover::after {
+#highlighted-text:hover:after,
+#target-txt_selected:hover::after {
   opacity: .3;
   transition: var(--tst-time) ease-in-out;
 }
@@ -118,7 +119,7 @@
   border-radius: 1rem;
 }
 
-#target-modal h3{
+#target-modal h3 {
   margin: .5rem 0;
 }
 

@@ -1,5 +1,5 @@
 {
-  "name": "World Wide Check",
+  "name": "World Wide Check Copy",
   "description": "Combat online misinformation. Report false content directly from webpages for a safer online environment.",
   "version": "1.0.1",
   "manifest_version": 3,
@@ -16,10 +16,13 @@
     "activeTab",
     "scripting",
     "notifications",
-    "tabs"
+    "tabs",
+    "storage"
   ],
   "host_permissions": [
-    "*://*/*"
+    "https://*.reddit.com/*",
+    "https://api.github.com/*",
+    "https://itsyoboygod.github.io/*"
   ],
   "action": {
     "default_popup": "/popup/popup.html",
@@ -31,30 +34,18 @@
   },
   "web_accessible_resources": [
     {
-      "resources": [
-        "popup/recaptcha.html",
-        "popup/recaptcha.js"
-      ],
-      "matches": [
-        "<all_urls>"
-      ]
+      "resources": ["popup/recaptcha.html"],
+      "matches": ["<all_urls>"]
     }
   ],
   "content_scripts": [
     {
-      "matches": [
-        "<all_urls>"
-      ],
-      "js": [
-        "popup/popup.js",
-        "scripts/readDom.js"
-      ],
-      "css": [
-        "css/style.css"
-      ]
+      "matches": ["<all_urls>"],
+      "js": ["scripts/content.js"],
+      "css": ["css/style.css"]
     }
   ],
   "content_security_policy": {
-    "extension_pages": "script-src 'self'; object-src 'none'; frame-src 'self' https://www.google.com/recaptcha/ https://www.gstatic.com/recaptcha/"
+    "extension_pages": "script-src 'self'; object-src 'none'; frame-src 'self' https://itsyoboygod.github.io/"
   }
 }

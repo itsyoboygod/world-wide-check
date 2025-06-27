@@ -1,35 +1,22 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <title>reCAPTCHA Verification</title>
-
-    <!-- ✅ Add CSP to Allow Google reCAPTCHA -->
-    <meta http-equiv="Content-Security-Policy" content="
-        default-src 'self';
-        script-src 'self' https://www.google.com/recaptcha/ https://www.gstatic.com/recaptcha/;
-        frame-src https://www.google.com/recaptcha/ https://www.gstatic.com/recaptcha/;
-    ">
-
-    <script src="https://www.google.com/recaptcha/api.js" async defer></script>
-    <script>
-        function verifyCallback(response) {
-            if (response) {
-                console.log("✅ reCAPTCHA Passed!");
-                
-                // Send success message back to the Chrome extension
-                window.opener.postMessage("recaptchaSuccess", "*");
-                
-                // Close the popup after 1 second
-                setTimeout(() => window.close(), 1000);
-            }
-        }
-    </script>
+  <title>Complete reCAPTCHA</title>
 </head>
 <body>
-    <h2>Complete reCAPTCHA</h2>
-    <form>
-        <div class="g-recaptcha" data-sitekey="YOUR_SITE_KEY" data-callback="verifyCallback"></div>
-    </form>
+  <div id="recaptcha"></div>
+  <script src="https://www.google.com/recaptcha/api.js"></script>
+  <script>
+    function onRecaptchaSuccess() {
+      window.opener.postMessage("recaptchaSuccess", "https://itsyoboygod.github.io");
+      window.close();
+    }
+    grecaptcha.ready(() => {
+      grecaptcha.render('recaptcha', {
+        sitekey: 'YOUR_RECAPTCHA_SITE_KEY',
+        callback: onRecaptchaSuccess
+      });
+    });
+  </script>
 </body>
 </html>
