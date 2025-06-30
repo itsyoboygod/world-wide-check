@@ -2,39 +2,42 @@
 let reportCache = { reddit: [], anon: [], lastUpdated: 0 };
 const CACHE_TTL = 15 * 60 * 1000; // 15 minutes
 let GIST_TOKEN = "";
+let XAI_API_KEY = "";
 let matchingTitles = []; // Initialize to fix undefined error
 let badgeTextValues = {};
 
-// Load GIST_TOKEN
+// Load GIST_TOKEN and XAI_API_KEY
 async function getGistToken(maxRetries = 3, retryCount = 0) {
-  if (GIST_TOKEN) return GIST_TOKEN;
+  if (GIST_TOKEN && XAI_API_KEY) return { GIST_TOKEN, XAI_API_KEY };
   try {
     const response = await fetch("https://itsyoboygod.github.io/world-wide-check/gist-proxy.json");
     if (!response.ok) throw new Error(`Fetch error: ${response.status} - ${await response.text()}`);
     const data = await response.json();
-    if (!data.GIST_TRIGGER_PAT) throw new Error("GIST_TRIGGER_PAT missing in response");
-    GIST_TOKEN = data.GIST_TRIGGER_PAT.trim(); // Remove any whitespace
-    console.log("✅ GIST_TOKEN Loaded (raw):", GIST_TOKEN.substring(0, 4) + "...");
+    if (!data.GIST_TRIGGER_PAT || !data.XAI_API_KEY) throw new Error("Missing GIST_TRIGGER_PAT or XAI_API_KEY in response");
+    GIST_TOKEN = data.GIST_TRIGGER_PAT.trim();
+    XAI_API_KEY = data.XAI_API_KEY.trim();
+    console.log("✅ GIST_TOKEN and XAI_API_KEY Loaded");
     
-    // Validate token
+    // Validate GIST_TOKEN
     const testResponse = await fetch("https://api.github.com/user", {
       headers: { "Authorization": `token ${GIST_TOKEN}` }
     });
     if (!testResponse.ok) {
       const testError = await testResponse.text();
-      console.error("Token validation failed:", { status: testResponse.status, testError });
-      throw new Error(`Token invalid: ${testResponse.status} - ${testError}`);
+      console.error("GIST_TOKEN validation failed:", { status: testResponse.status, testError });
+      throw new Error(`GIST_TOKEN invalid: ${testResponse.status} - ${testError}`);
     }
-    console.log("✅ Token validated successfully");
-    return GIST_TOKEN;
+    console.log("✅ GIST_TOKEN validated successfully");
+    return { GIST_TOKEN, XAI_API_KEY };
   } catch (error) {
-    console.error("❌ Failed to fetch GIST_TOKEN (Attempt " + (retryCount + 1) + "):", error.message);
+    console.error("❌ Failed to fetch tokens (Attempt " + (retryCount + 1) + "):", error.message);
     if (retryCount < maxRetries) {
       await new Promise(resolve => setTimeout(resolve, 2000 * (retryCount + 1)));
       return getGistToken(maxRetries, retryCount + 1);
     }
-    console.warn("Max retries reached. Anonymous reports will be unavailable. Check GIST_TOKEN.");
+    console.warn("Max retries reached. Anonymous reports and DeepSearch will be unavailable.");
     GIST_TOKEN = null;
+    XAI_API_KEY = null;
     return null;
   }
 }
@@ -155,6 +158,35 @@ async function saveReportToGist(url, selectedText, selectedFlair) {
   }
 }
 
+// Perform DeepSearch using xAI API
+async function performDeepSearch(title, reportId) {
+  if (!XAI_API_KEY) {
+    console.warn("⚠️ XAI_API_KEY not available");
+    return { error: "XAI_API_KEY missing" };
+  }
+  try {
+    const response = await fetch("https://api.x.ai/deepsearch", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${XAI_API_KEY}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ query: title })
+    });
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error("xAI API error:", { status: response.status, errorText });
+      throw new Error(`xAI API error: ${response.status} - ${errorText}`);
+    }
+    const data = await response.json();
+    console.log("DeepSearch results:", data);
+    return { reportId, results: data };
+  } catch (error) {
+    console.error("Failed to perform DeepSearch:", error.message);
+    return { reportId, error: error.message };
+  }
+}
+
 // Update badge
 function updateBadge(tabId, url, fullTxt) {
   const relevantReports = [...reportCache.reddit, ...reportCache.anon].filter(r => {
@@ -218,7 +250,12 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       .catch((err) => sendResponse({ error: err.message }));
     return true;
   }
-
+  if (request.action === "deepSearch") {
+    performDeepSearch(request.title, request.reportId)
+      .then(sendResponse)
+      .catch((err) => sendResponse({ error: err.message }));
+    return true;
+  }
   if (request.action === "sendfullHTMLTEXT") {
     chrome.tabs.query({ active: true, currentWindow: true }, ([tab]) => {
       updateBadge(tab.id, tab.url, request.fullTxt);

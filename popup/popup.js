@@ -14,7 +14,7 @@ function createElement(tag, attributes = {}) {
   return element;
 }
 
-function createPostElement(postData, tabCount) {
+function createPostElement(postData, tabCount, isAIReport = false) {
   const li = createElement('li', { className: 'li__table' });
   const details = createElement('details', { name: 'detalhes' });
   const summary = createElement('summary');
@@ -25,20 +25,50 @@ function createPostElement(postData, tabCount) {
     style: `--clr-flair: ${postData.color};`
   });
   summary.append(reportNumber, createElement('span', { textContent: '>' }));
+  const deepSearchContainer = createElement('div', { className: 'deepsearch-container' });
+  const deepSearchBtn = createElement('button', {
+    className: 'deepsearch-btn',
+    textContent: 'Verify with DeepSearch',
+    dataset: { reportId: postData.post_id || `anon-${tabCount}` }
+  });
+  const deepSearchResult = createElement('p', {
+    className: 'deepsearch-result',
+    textContent: 'No DeepSearch results yet.',
+    dataset: { reportId: postData.post_id || `anon-${tabCount}` }
+  });
+  if (isAIReport) {
+    deepSearchBtn.addEventListener('click', () => {
+      chrome.runtime.sendMessage({
+        action: 'deepSearch',
+        title: postData.title,
+        reportId: postData.post_id || `anon-${tabCount}`
+      }, (response) => {
+        if (response.error) {
+          deepSearchResult.textContent = `Error: ${response.error}`;
+        } else if (response.results) {
+          deepSearchResult.textContent = response.results.summary || 'No verification results available.';
+        }
+      });
+    });
+  }
+  deepSearchContainer.append(deepSearchBtn, deepSearchResult);
   details.append(
     summary,
-    createElement('p', { id: `id_report_title_${postData.post_id}`, textContent: postData.title }),
+    createElement('p', { id: `id_report_title_${postData.post_id || `anon-${tabCount}`}`, textContent: postData.title }),
     createElement('hr', { className: 'hr-status', dataset: { hr_status: 'verified' } }),
-    createElement('p', { id: `id_report_text_${postData.post_id}`, className: 'verified', textContent: postData.text || 'No additional text' }),
-    createInfoCol(postData)
+    createElement('p', { id: `id_report_text_${postData.post_id || `anon-${tabCount}`}`, className: 'verified', textContent: postData.text || 'No additional text' }),
+    createInfoCol(postData),
+    isAIReport ? deepSearchContainer : null
   );
   li.appendChild(details);
-  chrome.runtime.sendMessage({
-    action: 'matchingTitleSelected',
-    payload: postData.title,
-    flair: postData.flair,
-    clrFlair: postData.color
-  });
+  if (!isAIReport) {
+    chrome.runtime.sendMessage({
+      action: 'matchingTitleSelected',
+      payload: postData.title,
+      flair: postData.flair,
+      clrFlair: postData.color
+    });
+  }
   return li;
 }
 
@@ -68,23 +98,22 @@ function createInfoCol(postData) {
   return infoCol;
 }
 
-// In popup.js (displayReports)
-function displayReports(reports) {
-  const ul = document.getElementById("post_list");
+function displayReports(reports, isAIReport = false) {
+  const ul = document.getElementById(isAIReport ? "ai-post_list" : "post_list");
   if (!ul) {
-    console.error("Missing #post_list in popup.html");
+    console.error(`Missing #${isAIReport ? 'ai-post_list' : 'post_list'} in popup.html`);
     return;
   }
   ul.innerHTML = ""; // Clear existing content
-  console.log("Displaying reports:", reports);
+  console.log(`Displaying ${isAIReport ? 'AI' : 'human'} reports:`, reports);
   const relevantReports = [...reports.reddit, ...reports.anon].filter(r => {
-    const reportUrl = r.url ? r.url.replace(/^https?:\/\//, '').replace(/\/$/, '').replace(/[\[\]\(\)]/g, '') : '';
+    const reportUrl = r.url ? r.url.replace(/^https?:\/\//, '').replace(/\/$/, '') : '';
     const tabUrlNorm = tabUrl ? tabUrl.replace(/^https?:\/\//, '').replace(/\/$/, '') : '';
     console.log("Comparing:", { reportUrl, tabUrlNorm });
     return reportUrl === tabUrlNorm || tabUrlNorm.includes(reportUrl) || (r.text && r.text.includes(tabUrlNorm));
   });
-  console.log("Relevant reports for display:", relevantReports);
-  const loadingMessage = document.getElementById('loading-message');
+  console.log(`Relevant ${isAIReport ? 'AI' : 'human'} reports for display:`, relevantReports);
+  const loadingMessage = document.getElementById(isAIReport ? 'ai-loading-message' : 'loading-message');
   if (loadingMessage) {
     loadingMessage.remove(); // Remove loading message once data is processed
   }
@@ -92,22 +121,23 @@ function displayReports(reports) {
     ul.appendChild(createElement('p', { className: 'no-data-found', textContent: 'All clear. No data found on this page!' }));
     return;
   }
-  relevantReports.forEach((report, i) => ul.appendChild(createPostElement(report, i)));
-  document.getElementById('report-content')?.appendChild(ul);
+  relevantReports.forEach((report, i) => ul.appendChild(createPostElement(report, i, isAIReport)));
+  const targetContent = document.getElementById(isAIReport ? 'ai-report-content-list' : 'report-content');
+  targetContent?.appendChild(ul);
   const labels = document.querySelectorAll('.tabs__label');
   labels.forEach(label => label.setAttribute('data-tab', relevantReports.length));
 }
 
-function removeLoadingMsg() {
-  const loading = document.getElementById("loading-message");
+function removeLoadingMsg(isAIReport = false) {
+  const loading = document.getElementById(isAIReport ? "ai-loading-message" : "loading-message");
   if (loading) loading.remove();
 }
 
 document.addEventListener("DOMContentLoaded", () => {
   const loadingMessage = document.getElementById('loading-message');
-  if (loadingMessage) {
-    loadingMessage.style.display = 'block'; // Ensure it’s visible initially
-  }
+  const aiLoadingMessage = document.getElementById('ai-loading-message');
+  if (loadingMessage) loadingMessage.style.display = 'block';
+  if (aiLoadingMessage) aiLoadingMessage.style.display = 'block';
   chrome.runtime.sendMessage({ action: "getCurrentTabId" }, (response) => {
     if (response && response.tabUrl) {
       tabUrl = response.tabUrl;
@@ -118,13 +148,18 @@ document.addEventListener("DOMContentLoaded", () => {
     }
     chrome.runtime.sendMessage({ action: "getReports" }, (reportResponse) => {
       if (reportResponse && (reportResponse.reddit || reportResponse.anon)) {
-        displayReports(reportResponse);
+        displayReports(reportResponse); // Human reports
+        displayReports(reportResponse, true); // AI reports
       } else {
         console.error("No reports received:", reportResponse?.error || "Unknown error");
         const ul = document.getElementById("post_list");
-        if (ul) ul.innerHTML = ""; // Clear list
-        if (loadingMessage) loadingMessage.remove(); // Remove on failure
+        const aiUl = document.getElementById("ai-post_list");
+        if (ul) ul.innerHTML = "";
+        if (aiUl) aiUl.innerHTML = "";
+        if (loadingMessage) loadingMessage.remove();
+        if (aiLoadingMessage) aiLoadingMessage.remove();
         ul?.appendChild(createElement('p', { className: 'no-data-found', textContent: 'No reports received.' }));
+        aiUl?.appendChild(createElement('p', { className: 'no-data-found', textContent: 'No reports received.' }));
       }
     });
   });
