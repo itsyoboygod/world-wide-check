@@ -22,8 +22,11 @@ jobs:
 
       - name: Create Gist Proxy JSON
         run: |
-          echo "{ \"GIST_TRIGGER_PAT\": \"${{ secrets.GIST_TRIGGER_PAT }}\" }" > gist-proxy.json
-          cat gist-proxy.json  # ✅ Debugging: Print the file to check if it was created
+          echo "{ \"GIST_TRIGGER_PAT\": \"${{ secrets.GIST_TRIGGER_PAT }}\", \"XAI_API_KEY\": \"${{ secrets.XAI_API_KEY }}\" }" > gist-proxy.json
+          cat gist-proxy.json  # Debugging: Print the file to check contents
+        env:
+          GIST_TRIGGER_PAT: ${{ secrets.GIST_TRIGGER_PAT }}
+          XAI_API_KEY: ${{ secrets.XAI_API_KEY }}
 
       - name: Upload artifact for deployment
         uses: actions/upload-pages-artifact@v3
