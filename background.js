@@ -74,7 +74,6 @@ async function fetchAnonymousReports() {
     return [];
   }
   try {
-    // Test the token with a meta request
     const testResponse = await fetch("https://api.github.com/user", {
       headers: { "Authorization": `token ${GIST_TOKEN}` }
     });
@@ -160,27 +159,42 @@ async function saveReportToGist(url, selectedText, selectedFlair) {
 
 // Perform DeepSearch using xAI API
 async function performDeepSearch(title, reportId) {
-  if (!XAI_API_KEY) {
-    console.warn("⚠️ XAI_API_KEY not available");
-    return { error: "XAI_API_KEY missing" };
+  if (!OPENAI_API_KEY) {
+    console.warn("⚠️ OPENAI_API_KEY not available");
+    return { reportId, error: "OPENAI_API_KEY missing. Please configure it in gist-proxy.json." };
   }
   try {
-    const response = await fetch("https://api.x.ai/deepsearch", {
+    const prompt = `Verify the accuracy of the following statement for potential misinformation: "${title}". Provide a summary of findings, including any evidence of falsehood or credibility issues.`;
+    const response = await fetch("https://api.openai.com/v1/chat/completions", {
       method: "POST",
       headers: {
-        Authorization: `Bearer ${XAI_API_KEY}`,
+        Authorization: `Bearer ${OPENAI_API_KEY}`,
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ query: title })
+      body: JSON.stringify({
+        model: "gpt-3.5-turbo",
+        messages: [{ role: "user", content: prompt }],
+        max_tokens: 200,
+        temperature: 0.5
+      })
     });
     if (!response.ok) {
       const errorText = await response.text();
-      console.error("xAI API error:", { status: response.status, errorText });
-      throw new Error(`xAI API error: ${response.status} - ${errorText}`);
+      console.error("OpenAI API error:", { status: response.status, errorText });
+      if (response.status === 429) {
+        return { reportId, error: "Rate limit exceeded. Please try again later." };
+      }
+      throw new Error(`OpenAI API error: ${response.status} - ${errorText}`);
     }
     const data = await response.json();
     console.log("DeepSearch results:", data);
-    return { reportId, results: data };
+    return {
+      reportId,
+      results: {
+        summary: data.choices?.[0]?.message?.content?.trim() || "No verification results available.",
+        sources: [] // OpenAI doesn’t provide sources; adjust popup.js if needed
+      }
+    };
   } catch (error) {
     console.error("Failed to perform DeepSearch:", error.message);
     return { reportId, error: error.message };
