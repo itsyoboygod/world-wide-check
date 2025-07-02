@@ -26,7 +26,7 @@ function readDom() {
   });
 }
 
-function highlightText(text, flair, color) {
+function highlightText(text, flair, color,counter = 0) {
   const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
   const nodesToUpdate = [];
   while (walker.nextNode()) {
@@ -47,6 +47,7 @@ function highlightText(text, flair, color) {
           textContent: text
         });
         span.dataset.flair = flair; // Set flair in dataset
+        span.dataset.counter = counter; // Set counter in dataset
         span.style.setProperty('--clr-flair', color); // Set custom property for CSS
         span.style.padding = '2px 4px'; // Inline styling for visibility
         span.style.borderRadius = '3px'; // Optional rounding
@@ -71,7 +72,7 @@ function renderReports({ reports, url }) {
     return reportUrl === tabUrl || tabUrl.includes(reportUrl) || document.body.textContent.toLowerCase().includes(r.title.toLowerCase());
   });
   console.log("Relevant reports for rendering:", relevantReports);
-  relevantReports.forEach(r => highlightText(r.title, r.flair, r.color));
+  relevantReports.forEach(r => highlightText(r.title, r.flair, r.color, r.counter || 0));
 }
 
 function openFlagModal(flags, selectedText) {

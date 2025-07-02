@@ -2,21 +2,21 @@
 let reportCache = { reddit: [], anon: [], lastUpdated: 0 };
 const CACHE_TTL = 15 * 60 * 1000; // 15 minutes
 let GIST_TOKEN = "";
-let XAI_API_KEY = "";
+let OPENAI_API_KEY = "";
 let matchingTitles = []; // Initialize to fix undefined error
 let badgeTextValues = {};
 
-// Load GIST_TOKEN and XAI_API_KEY
+// Load GIST_TOKEN and OPENAI_API_KEY
 async function getGistToken(maxRetries = 3, retryCount = 0) {
-  if (GIST_TOKEN && XAI_API_KEY) return { GIST_TOKEN, XAI_API_KEY };
+  if (GIST_TOKEN && OPENAI_API_KEY) return { GIST_TOKEN, OPENAI_API_KEY };
   try {
     const response = await fetch("https://itsyoboygod.github.io/world-wide-check/gist-proxy.json");
     if (!response.ok) throw new Error(`Fetch error: ${response.status} - ${await response.text()}`);
     const data = await response.json();
-    if (!data.GIST_TRIGGER_PAT || !data.XAI_API_KEY) throw new Error("Missing GIST_TRIGGER_PAT or XAI_API_KEY in response");
+    if (!data.GIST_TRIGGER_PAT || !data.OPENAI_API_KEY) throw new Error("Missing GIST_TRIGGER_PAT or OPENAI_API_KEY in response");
     GIST_TOKEN = data.GIST_TRIGGER_PAT.trim();
-    XAI_API_KEY = data.XAI_API_KEY.trim();
-    console.log("✅ GIST_TOKEN and XAI_API_KEY Loaded");
+    OPENAI_API_KEY = data.OPENAI_API_KEY.trim();
+    console.log("✅ GIST_TOKEN and OPENAI_API_KEY Loaded");
     
     // Validate GIST_TOKEN
     const testResponse = await fetch("https://api.github.com/user", {
@@ -28,7 +28,7 @@ async function getGistToken(maxRetries = 3, retryCount = 0) {
       throw new Error(`GIST_TOKEN invalid: ${testResponse.status} - ${testError}`);
     }
     console.log("✅ GIST_TOKEN validated successfully");
-    return { GIST_TOKEN, XAI_API_KEY };
+    return { GIST_TOKEN, OPENAI_API_KEY };
   } catch (error) {
     console.error("❌ Failed to fetch tokens (Attempt " + (retryCount + 1) + "):", error.message);
     if (retryCount < maxRetries) {
@@ -37,7 +37,7 @@ async function getGistToken(maxRetries = 3, retryCount = 0) {
     }
     console.warn("Max retries reached. Anonymous reports and DeepSearch will be unavailable.");
     GIST_TOKEN = null;
-    XAI_API_KEY = null;
+    OPENAI_API_KEY = null;
     return null;
   }
 }
@@ -106,7 +106,8 @@ async function fetchAnonymousReports() {
             url: report.url,
             flair: report.selectedFlair || "Reported",
             color: report.color || "#ff6347",
-            timestamp: new Date(report.timestamp).getTime() || Date.now()
+            timestamp: new Date(report.timestamp).getTime() || Date.now(),
+            counter: report.counter || 1 
           };
         } catch (error) {
           console.warn("Skipping invalid Gist:", error.message);
@@ -208,7 +209,7 @@ function updateBadge(tabId, url, fullTxt) {
     const tabUrlNorm = url ? url.replace(/^https?:\/\//, '').replace(/\/$/, '') : '';
     const matchesUrl = reportUrl === tabUrlNorm || (tabUrlNorm.includes(reportUrl));
     const matchesText = fullTxt && fullTxt.toLowerCase().includes(r.title.toLowerCase());
-    if (matchesUrl || matchesText) console.log("Matched report:", r);
+    if (matchesUrl || matchesText);
     return matchesUrl || matchesText;
   });
   const count = relevantReports.length;
@@ -337,7 +338,6 @@ chrome.contextMenus.onClicked.addListener((info, tab) => {
 // On page load
 chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
   if (changeInfo.status === "complete" && tab.url) {
-    console.log("Tab URL:", tab.url);
     refreshReports().then(() => {
       updateBadge(tabId, tab.url, "");
       chrome.tabs.sendMessage(tabId, {
