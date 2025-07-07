@@ -14,8 +14,25 @@ function createElement(tag, attributes = {}) {
   return element;
 }
 
-function createPostElement(postData, tabCount, isAIReport = false) {
+function getOrCreateUserId() {
+  return new Promise((resolve) => {
+    chrome.storage.local.get(["userId"], (result) => {
+      if (result.userId) {
+        resolve(result.userId);
+      } else {
+        const userId = crypto.randomUUID(); // Generate a unique ID
+        chrome.storage.local.set({ userId }, () => resolve(userId));
+      }
+    });
+  });
+}
+
+async function createPostElement(postData, tabCount, isAIReport = false) {
   const li = createElement("li", { className: "li__table" });
+  if (!li) {
+    console.error("Failed to create li element for report:", postData);
+    return null; // Return null if creation fails
+  }
   const details = createElement("details", { name: "detalhes" });
   const summary = createElement("summary");
   const reportNumber = createElement("label", {
@@ -71,57 +88,96 @@ function createPostElement(postData, tabCount, isAIReport = false) {
     createElement("p", {
       id: `id_report_text_${postData.post_id || `anon-${tabCount}`}`,
       className: "verified",
-      textContent: postData.text || "Complete the captcha to also report it",
+      textContent:
+        postData.text ||
+        `${postData.counter || 0} people reported this text. ${
+          postData.post_id ? "" : "Complete the captcha to also report it"
+        }`,
     }),
-    createInfoCol(postData),
     isAIReport ? deepSearchContainer : ""
   );
-  // Add report button for anonymous reports
-  if (!isAIReport && postData.post_id === undefined) { // Check for anonymous reports (no post_id)
-    const reportBtn = createElement('button', {
-      id: `report-btn-${tabCount}`,
-      textContent: 'Complete reCAPTCHA',
-      style: 'margin-top: 5px; padding: 2px 6px; font-size: 12px; cursor: pointer; background-color: #f0f0f0; border: 1px solid #ccc; border-radius: 3px;'
-    });
-    reportBtn.addEventListener('click', () => {
-      const popup = window.open(
-        "https://itsyoboygod.github.io/recaptcha-page/",
-        "reCAPTCHA",
-        "width=500,height=600"
-      );
-      window.addEventListener('message', function handler(event) {
-        if (event.origin === "https://itsyoboygod.github.io" && event.data === "recaptchaSuccess") {
-          chrome.runtime.sendMessage({
-            action: "saveReportToGist",
-            url: tabUrl,
-            selectedText: postData.title,
-            selectedFlair: postData.flair
-          }, (response) => {
-            if (response.success) {
-              const textElement = document.getElementById(`id_report_text_${`anon-${tabCount}`}`);
-              if (textElement) textElement.textContent = 'Report submitted successfully!';
-              // Refresh reports to update counter
-              chrome.runtime.sendMessage({ action: "getReports" });
-            } else {
-              console.error("Failed to save report:", response.error);
-            }
+  // Add info column first
+  const infoCol = createInfoCol(postData);
+  details.appendChild(infoCol);
+  // Add report button for anonymous and AI reports (not Reddit)
+  if (postData.post_id === undefined && (!isAIReport || isAIReport)) {
+    const reportId = `anon-${tabCount}`;
+    const userId = await getOrCreateUserId();
+    return new Promise((resolve) => {
+      chrome.storage.local.get(["submittedReports"], (result) => {
+        const submittedReports = result.submittedReports || {};
+        const userSubmissions = submittedReports[userId] || [];
+        if (!userSubmissions.includes(reportId)) {
+          const reportBtn = createElement("button", {
+            id: `report-btn-${tabCount}`,
+            textContent: "Complete reCAPTCHA",
+            style:
+              "margin-top: 5px; padding: 2px 6px; font-size: 12px; cursor: pointer; background-color: #f0f0f0; border: 1px solid #ccc; border-radius: 3px;",
           });
-          window.removeEventListener('message', handler);
+          reportBtn.addEventListener("click", () => {
+            const popup = window.open(
+              "https://itsyoboygod.github.io/recaptcha-page/",
+              "reCAPTCHA",
+              "width=500,height=600"
+            );
+            window.addEventListener("message", function handler(event) {
+              if (
+                event.origin === "https://itsyoboygod.github.io" &&
+                event.data === "recaptchaSuccess"
+              ) {
+                chrome.runtime.sendMessage(
+                  {
+                    action: "saveReportToGist",
+                    url: tabUrl,
+                    selectedText: postData.title,
+                    selectedFlair: postData.flair,
+                  },
+                  (response) => {
+                    if (response.success) {
+                      const textElement = document.getElementById(
+                        `id_report_text_${reportId}`
+                      );
+                      if (textElement)
+                        textElement.textContent = `${
+                          postData.counter || 0
+                        } people reported this text. Report submitted successfully!`;
+                      // Mark as submitted and remove button
+                      userSubmissions.push(reportId);
+                      submittedReports[userId] = userSubmissions;
+                      chrome.storage.local.set({ submittedReports });
+                      reportBtn.remove();
+                    } else {
+                      console.error("Failed to save report:", response.error);
+                    }
+                  }
+                );
+                window.removeEventListener("message", handler);
+              }
+            });
+          });
+          if (reportBtn && reportBtn instanceof Node) {
+            details.insertBefore(reportBtn, infoCol);
+          } else {
+            console.error("Invalid reportBtn node:", reportBtn);
+          }
+        } else {
+          // If already submitted, update text and skip button
+          const textElement = document.getElementById(
+            `id_report_text_${reportId}`
+          );
+          if (textElement)
+            textElement.textContent = `${
+              postData.counter || 0
+            } people reported this text. You have already reported this.`;
         }
+        li.appendChild(details);
+        resolve(li);
       });
     });
-    details.appendChild(reportBtn);
+  } else {
+    li.appendChild(details);
+    return Promise.resolve(li);
   }
-  li.appendChild(details);
-  if (!isAIReport) {
-    chrome.runtime.sendMessage({
-      action: "matchingTitleSelected",
-      payload: postData.title,
-      flair: postData.flair,
-      clrFlair: postData.color,
-    });
-  }
-  return li;
 }
 
 function createInfoCol(postData) {
@@ -170,7 +226,7 @@ function createInfoCol(postData) {
   return infoCol;
 }
 
-function displayReports(reports, isAIReport = false) {
+async function displayReports(reports, isAIReport = false) {
   const ul = document.getElementById(isAIReport ? "ai-post_list" : "post_list");
   if (!ul) {
     console.error(
@@ -212,13 +268,22 @@ function displayReports(reports, isAIReport = false) {
     );
     return;
   }
-  relevantReports.forEach((report, i) =>
-    ul.appendChild(createPostElement(report, i, isAIReport))
-  );
+  for (const [i, report] of relevantReports.entries()) {
+    try {
+      const postElement = await createPostElement(report, i, isAIReport);
+      if (postElement && postElement instanceof Node) {
+        ul.appendChild(postElement);
+      } else {
+        console.warn("Skipping invalid post element for report:", report);
+      }
+    } catch (error) {
+      console.error("Error rendering post element:", error, "Report:", report);
+    }
+  }
   const targetContent = document.getElementById(
     isAIReport ? "ai-report-content-list" : "report-content"
   );
-  targetContent?.appendChild(ul);
+  if (targetContent) targetContent.appendChild(ul);
   const labels = document.querySelectorAll(".tabs__label");
   labels.forEach((label) =>
     label.setAttribute("data-tab", relevantReports.length)

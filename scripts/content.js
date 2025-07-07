@@ -26,7 +26,7 @@ function readDom() {
   });
 }
 
-function highlightText(text, flair, color,counter = 0) {
+function highlightText(text, flair, color, counter = 0) {
   const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
   const nodesToUpdate = [];
   while (walker.nextNode()) {
@@ -119,7 +119,7 @@ function openFlagModal(flags, selectedText) {
   submitBtn.onclick = () => {
     if (!submitBtn.disabled) {
       const flair = flairSelect.value;
-      highlightText(selectedText, flair, "#ff6347");
+      highlightText(selectedText, flair, "#ff6347", 0);
       chrome.runtime.sendMessage(
         {
           action: "saveReportToGist",
@@ -224,7 +224,7 @@ function injectBlurSlider() {
 chrome.runtime.onMessage.addListener((request) => {
   if (request.action === "renderReports") renderReports(request);
   if (request.action === "matchingTitleSelected") {
-    highlightText(request.payload, request.flair, request.clrFlair);
+    highlightText(request.payload, request.flair, request.clrFlair, 0);
   }
   if (request.action === "openFlagModal")
     openFlagModal(request.flags, request.selectedText);
