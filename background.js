@@ -1,23 +1,20 @@
 // Cache for reports
 let reportCache = { reddit: [], anon: [], lastUpdated: 0 };
 const CACHE_TTL = 15 * 60 * 1000; // 15 minutes
-let GIST_TOKEN = "";
-let OPENAI_API_KEY = "";
+let GIST_TOKEN = process.env.GIST_TRIGGER_PAT || "";
+let OPENAI_API_KEY = process.env.OPENAI_API_KEY || "";
 let matchingTitles = []; // Initialize to fix undefined error
 let badgeTextValues = {};
 
-// Load GIST_TOKEN and OPENAI_API_KEY
+// Load GIST_TOKEN and OPENAI_API_KEY from environment
 async function getGistToken(maxRetries = 3, retryCount = 0) {
   if (GIST_TOKEN && OPENAI_API_KEY) return { GIST_TOKEN, OPENAI_API_KEY };
   try {
-    const response = await fetch("https://itsyoboygod.github.io/world-wide-check/gist-proxy.json");
-    if (!response.ok) throw new Error(`Fetch error: ${response.status} - ${await response.text()}`);
-    const data = await response.json();
-    if (!data.GIST_TRIGGER_PAT || !data.OPENAI_API_KEY) throw new Error("Missing GIST_TRIGGER_PAT or OPENAI_API_KEY in response");
-    GIST_TOKEN = data.GIST_TRIGGER_PAT.trim();
-    OPENAI_API_KEY = data.OPENAI_API_KEY.trim();
-    console.log("✅ GIST_TOKEN and OPENAI_API_KEY Loaded");
-    
+    if (!GIST_TOKEN || !OPENAI_API_KEY) {
+      throw new Error("GIST_TOKEN or OPENAI_API_KEY missing in environment variables");
+    }
+    console.log("✅ GIST_TOKEN and OPENAI_API_KEY Loaded from environment");
+
     // Validate GIST_TOKEN
     const testResponse = await fetch("https://api.github.com/user", {
       headers: { "Authorization": `token ${GIST_TOKEN}` }
@@ -212,7 +209,7 @@ async function saveReportToGist(url, selectedText, selectedFlair) {
 async function performDeepSearch(title, reportId) {
   if (!OPENAI_API_KEY) {
     console.warn("⚠️ OPENAI_API_KEY not available");
-    return { reportId, error: "OPENAI_API_KEY missing. Please configure it in gist-proxy.json." };
+    return { reportId, error: "OPENAI_API_KEY missing. Please configure it in environment variables." };
   }
   try {
     const prompt = `Verify the accuracy of the following statement for potential misinformation: "${title}". Provide a summary of findings, including any evidence of falsehood or credibility issues.`;
