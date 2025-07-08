@@ -17,11 +17,10 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Verify deployment setup
+      - name: Create config.js dynamically
         run: |
-          echo "No configuration files with secrets are generated. Secrets are managed at runtime via environment variables."
-        env:
-          GIST_TOKEN: ${{ secrets.GIST_TOKEN }}
+          echo "{ \"GIST_TOKEN\": \"${{ secrets.GIST_TOKEN }}\" }" > config.js
+
 
       - name: Upload artifact for deployment
         uses: actions/upload-pages-artifact@v3

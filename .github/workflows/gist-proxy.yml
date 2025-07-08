@@ -20,9 +20,10 @@ jobs:
         with:
           ref: gh-pages  # ✅ Ensure this checks out the correct branch
 
-      - name: Verify environment setup
+      - name: Create Gist Proxy JSON
         run: |
-          echo "GIST_TRIGGER_PAT and OPENAI_API_KEY are set as environment secrets and will be used by the extension at runtime."
+          echo "{ \"GIST_TRIGGER_PAT\": \"${{ secrets.GIST_TRIGGER_PAT }}\", \"OPENAI_API_KEY\": \"${{ secrets.OPENAI_API_KEY }}\" }" > gist-proxy.json
+          cat gist-proxy.json  # Debugging: Print the file to check contents
         env:
           GIST_TRIGGER_PAT: ${{ secrets.GIST_TRIGGER_PAT }}
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
