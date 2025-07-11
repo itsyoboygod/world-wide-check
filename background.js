@@ -10,6 +10,7 @@ let badgeTextValues = {};
 async function getGistToken(maxRetries = 3, retryCount = 0) {
   if (GIST_TOKEN && OPENAI_API_KEY) return { GIST_TOKEN, OPENAI_API_KEY };
   try {
+    console.log("Attempting to fetch tokens from:", "https://itsyoboygod.github.io/world-wide-check/gist-proxy.json");
     const response = await fetch("https://itsyoboygod.github.io/world-wide-check/gist-proxy.json");
     if (!response.ok) throw new Error(`Fetch error: ${response.status} - ${await response.text()}`);
     const data = await response.json();
@@ -35,7 +36,7 @@ async function getGistToken(maxRetries = 3, retryCount = 0) {
       await new Promise(resolve => setTimeout(resolve, 2000 * (retryCount + 1)));
       return getGistToken(maxRetries, retryCount + 1);
     }
-    console.warn("Max retries reached. Anonymous reports and DeepSearch will be unavailable.");
+    console.warn("Max retries reached. Anonymous reports and DeepSearch will be unavailable. Check deployment at https://itsyoboygod.github.io/world-wide-check/gist-proxy.json");
     GIST_TOKEN = null;
     OPENAI_API_KEY = null;
     return null;

@@ -27,7 +27,13 @@ function getOrCreateUserId() {
   });
 }
 
-async function createPostElement(postData, tabCount, isAIReport = false) {
+function generateReportId(url, title) {
+  // Create a unique ID based on URL and title to persist across cache clears
+  const hash = `${url}-${title}`.replace(/^https?:\/\//, '').replace(/\/$/, '');
+  return `anon-${hash.slice(0, 16)}`; // Shortened for practicality
+}
+
+async function createPostElement(postData, tabCount, isAIReport = false, allReports) {
   const li = createElement("li", { className: "li__table" });
   if (!li) {
     console.error("Failed to create li element for report:", postData);
@@ -38,7 +44,7 @@ async function createPostElement(postData, tabCount, isAIReport = false) {
   const reportNumber = createElement("label", {
     id: "id_report_data",
     textContent: `REPORT#${tabCount + 1}`,
-    dataset: { flair: postData.flair },
+    dataset: { flair: postData.flair, counter: postData.counter || 0 },
     style: `--clr-flair: ${postData.color};`,
   });
   summary.append(reportNumber, createElement("span", { textContent: ">" }));
@@ -47,7 +53,7 @@ async function createPostElement(postData, tabCount, isAIReport = false) {
   });
   const deepSearchBtn = createElement("button", {
     className: "deepsearch-btn",
-    textContent: "Verify with DeepSearch",
+    textContent: "Verify with DeepSearch 🧠",
     dataset: { reportId: postData.post_id || `anon-${tabCount}` },
   });
   const deepSearchResult = createElement("p", {
@@ -101,18 +107,29 @@ async function createPostElement(postData, tabCount, isAIReport = false) {
   details.appendChild(infoCol);
   // Add report button for anonymous and AI reports (not Reddit)
   if (postData.post_id === undefined && (!isAIReport || isAIReport)) {
-    const reportId = `anon-${tabCount}`;
+    const reportId = generateReportId(tabUrl, postData.title);
     const userId = await getOrCreateUserId();
     return new Promise((resolve) => {
       chrome.storage.local.get(["submittedReports"], (result) => {
         const submittedReports = result.submittedReports || {};
         const userSubmissions = submittedReports[userId] || [];
-        if (!userSubmissions.includes(reportId)) {
+        const textElement = document.getElementById(
+          `id_report_text_${reportId}`
+        );
+
+        // Check if this report exists in allReports with user's flair or ID
+        const isOwnReport = allReports.anon.some((r) =>
+          r.url === tabUrl && r.title === postData.title && r.flair === postData.flair
+        ) || userSubmissions.includes(reportId);
+
+        if (isOwnReport) {
+          if (textElement) {
+            textElement.textContent = `${postData.counter || 0} people reported this text. You have already reported this.`;
+          }
+        } else {
           const reportBtn = createElement("button", {
             id: `report-btn-${tabCount}`,
-            textContent: "Complete reCAPTCHA",
-            style:
-              "margin-top: 5px; padding: 2px 6px; font-size: 12px; cursor: pointer; background-color: #f0f0f0; border: 1px solid #ccc; border-radius: 3px;",
+            textContent: "Complete CAPTCHA 🤖"
           });
           reportBtn.addEventListener("click", () => {
             const popup = window.open(
@@ -134,18 +151,16 @@ async function createPostElement(postData, tabCount, isAIReport = false) {
                   },
                   (response) => {
                     if (response.success) {
-                      const textElement = document.getElementById(
-                        `id_report_text_${reportId}`
-                      );
-                      if (textElement)
-                        textElement.textContent = `${
-                          postData.counter || 0
-                        } people reported this text. Report submitted successfully!`;
+                      if (textElement) {
+                        textElement.textContent = `${postData.counter || 0} people reported this text. Report submitted successfully!`;
+                      }
                       // Mark as submitted and remove button
                       userSubmissions.push(reportId);
                       submittedReports[userId] = userSubmissions;
                       chrome.storage.local.set({ submittedReports });
-                      reportBtn.remove();
+                      if (reportBtn.parentNode) {
+                        reportBtn.parentNode.removeChild(reportBtn);
+                      }
                     } else {
                       console.error("Failed to save report:", response.error);
                     }
@@ -160,15 +175,6 @@ async function createPostElement(postData, tabCount, isAIReport = false) {
           } else {
             console.error("Invalid reportBtn node:", reportBtn);
           }
-        } else {
-          // If already submitted, update text and skip button
-          const textElement = document.getElementById(
-            `id_report_text_${reportId}`
-          );
-          if (textElement)
-            textElement.textContent = `${
-              postData.counter || 0
-            } people reported this text. You have already reported this.`;
         }
         li.appendChild(details);
         resolve(li);
@@ -270,7 +276,7 @@ async function displayReports(reports, isAIReport = false) {
   }
   for (const [i, report] of relevantReports.entries()) {
     try {
-      const postElement = await createPostElement(report, i, isAIReport);
+      const postElement = await createPostElement(report, i, isAIReport, reports);
       if (postElement && postElement instanceof Node) {
         ul.appendChild(postElement);
       } else {

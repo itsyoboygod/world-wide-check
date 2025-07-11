@@ -79,9 +79,10 @@ function openFlagModal(flags, selectedText) {
   if (document.getElementById("target-overlay")) return;
   const overlay = createElement("div", { id: "target-overlay" });
   const modal = createElement("div", { id: "target-modal" });
+  const defaultFlair = flags[0] || "Reported"; // Default to first flair if available
   modal.innerHTML = `
       <h3>Flag this paragraph</h3>
-      <p id="target-txt_selected">${selectedText}</p>
+      <p id="target-txt_selected" data-flair="${defaultFlair}">${selectedText}</p>
       <select id="target-select-input">
         ${flags
           .map((flag) => `<option value="${flag}">${flag}</option>`)
@@ -89,8 +90,8 @@ function openFlagModal(flags, selectedText) {
       </select>
       <button id="recaptcha-btn">Verify reCAPTCHA</button>
       <button id="submit-btn" disabled>Submit Report</button>
-      <button id="cancel-btn">Cancel</button>
-    `;
+      <p id="captcha-message" style="font-size: 0.8em; color: #888; display: none;">Verify Captcha to report</p>
+      <button id="cancel-btn">Cancel</button>`;
   overlay.appendChild(modal);
   document.body.appendChild(overlay);
 
@@ -98,43 +99,81 @@ function openFlagModal(flags, selectedText) {
   const recaptchaBtn = modal.querySelector("#recaptcha-btn");
   const cancelBtn = modal.querySelector("#cancel-btn");
   const flairSelect = modal.querySelector("#target-select-input");
+  const captchaMessage = modal.querySelector("#captcha-message");
+  const txtSelected = modal.querySelector("#target-txt_selected");
 
-  recaptchaBtn.onclick = () => {
-    const popup = window.open(
-      "https://itsyoboygod.github.io/recaptcha-page/",
-      "reCAPTCHA",
-      "width=500,height=600"
-    );
-    window.addEventListener("message", function handler(event) {
-      if (
-        event.origin === "https://itsyoboygod.github.io" &&
-        event.data === "recaptchaSuccess"
-      ) {
-        submitBtn.disabled = false;
-        window.removeEventListener("message", handler); // Clean up
-      }
-    });
-  };
+  // Get user ID and check submitted reports
+  chrome.storage.local.get(["userId", "submittedReports"], (result) => {
+    const userId = result.userId || crypto.randomUUID();
+    const submittedReports = result.submittedReports || {};
+    const userSubmissions = submittedReports[userId] || [];
 
-  submitBtn.onclick = () => {
-    if (!submitBtn.disabled) {
-      const flair = flairSelect.value;
-      highlightText(selectedText, flair, "#ff6347", 0);
-      chrome.runtime.sendMessage(
-        {
-          action: "saveReportToGist",
-          url: window.location.href,
-          selectedText,
-          selectedFlair: flair,
-        },
-        () => document.body.removeChild(overlay)
-      );
-    } else {
-      alert("Please complete reCAPTCHA!");
+    // Check if this report (selectedText + url) was submitted by the user
+    const currentReportId = `${window.location.href}-${selectedText}`;
+    const isOwnReport = userSubmissions.includes(currentReportId);
+
+    if (isOwnReport) {
+      recaptchaBtn.disabled = true;
+      recaptchaBtn.textContent = "Already Reported";
+      submitBtn.disabled = true;
+      captchaMessage.style.display = "block";
+      captchaMessage.textContent = "You have already reported this text.";
+      captchaMessage.style.color = "#888";
     }
-  };
 
-  cancelBtn.onclick = () => document.body.removeChild(overlay);
+    // Update data-flair when the select changes
+    flairSelect.addEventListener("change", () => {
+      txtSelected.dataset.flair = flairSelect.value;
+    });
+
+    recaptchaBtn.onclick = () => {
+      if (!isOwnReport) {
+        const popup = window.open(
+          "https://itsyoboygod.github.io/recaptcha-page/",
+          "reCAPTCHA",
+          "width=500,height=600"
+        );
+        window.addEventListener("message", function handler(event) {
+          if (
+            event.origin === "https://itsyoboygod.github.io" &&
+            event.data === "recaptchaSuccess"
+          ) {
+            submitBtn.disabled = false;
+            captchaMessage.style.display = "none";
+            window.removeEventListener("message", handler); // Clean up
+          }
+        });
+      }
+    };
+
+    submitBtn.onclick = () => {
+      if (!submitBtn.disabled) {
+        const flair = flairSelect.value;
+        highlightText(selectedText, flair, "#ff6347", 0);
+        chrome.runtime.sendMessage(
+          {
+            action: "saveReportToGist",
+            url: window.location.href,
+            selectedText,
+            selectedFlair: flair,
+          },
+          () => {
+            // Mark as submitted
+            userSubmissions.push(currentReportId);
+            submittedReports[userId] = userSubmissions;
+            chrome.storage.local.set({ submittedReports });
+            document.body.removeChild(overlay);
+          }
+        );
+      } else {
+        captchaMessage.style.display = "block !important";
+        setTimeout(() => captchaMessage.offsetHeight, 0); // Force reflow
+        alert("Please complete reCAPTCHA!");
+      }
+    };
+
+    cancelBtn.onclick = () => document.body.removeChild(overlay);
+  });
 }
 
 function handleBlurLevelChange(event) {
@@ -185,9 +224,7 @@ function injectBlurSlider() {
       clearTimeout(hideTimeout);
       const rect = highlightedText.getBoundingClientRect();
       sliderContainer.style.display = "block";
-      sliderContainer.style.top = `${
-        rect.top - sliderContainer.offsetHeight
-      }px`;
+      sliderContainer.style.top = `${rect.top - sliderContainer.offsetHeight}px`;
       sliderContainer.style.left = `${rect.left}px`;
     }
   });

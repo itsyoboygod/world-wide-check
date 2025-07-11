@@ -6,6 +6,30 @@
   --lightskyblue: lightskyblue;
   --blur-amount: blur(10px);
   --tst-time: .250s;
+   --lime: hsl(120, 100%, 50%);
+  --red: hsl(0, 100%, 50%);
+  --blue: hsl(240, 100%, 50%);
+  --tomato: hsl(9, 100%, 64%);
+  --orange: hsl(39, 100%, 50%);
+  --gold: hsl(51, 100%, 50%);
+  --lightgrey: hsl(0, 0%, 83%);
+  --lightgrey1: hsl(219, 9%, 44%);
+  --lightgrey2: #303030;
+  --lightgrey3: #181818;
+  --grey: #181818;
+  --white: hsl(0, 0%, 100%);
+  --twt-bckg-grey: hsl(206, 18%, 17%);
+  --clr-data-verified: var(--lime);
+  --clr-data-bullet: var(--lightgrey);
+  --clr-data-analysing: var(--orange);
+  --clr-default-label: var(--lightgrey);
+  --clr-rdm: --clr-rdm;
+  --clr-flair: red;
+  --clr-body-bg: hsl(0, 0%, 100%);
+  --clr-txt: hsl(0, 0%, 0%);
+  --clr-underline: hsl(0, 0%, 0%);
+  --clr-scroll-bar-50: rgba(128, 128, 128, 0.5);
+  --tst-time: 0.25s;
 }
 
 #highlighted-text {
@@ -186,13 +210,33 @@
 }
 
 #target-modal button {
-  padding: .5rem;
-  border: none;
-  border-radius: .2rem;
+    padding: .5rem;
+    border: none;
+    background-color: var(--lightgrey1);
+    text-shadow: 0px 0px 5px black;
+    margin: 0 0.5rem 0.5rem;
+    width: -webkit-fill-available;
+    display: flex;
+    align-items: center;
+    border-radius: 0.2em;
+    color: white;
+    font-weight: 700;
+    font-size: 1rem;
+    justify-content: center;
+    text-wrap: nowrap;
+    transition: color 0.2s ease-in-out;
 }
 
-#target-modal button {
-  background-color: var(--tomato);
+#target-modal button:hover {
+  --clr-txt-label-hover: var(--lightgrey2);
+  cursor: pointer;
+  opacity: 0.8;
+  transition: 0.2s ease-in-out;
+}
+
+#target-modal button:disabled {
+  opacity: 0.5;
+  cursor: auto;
 }
 
 ::-webkit-scrollbar {
